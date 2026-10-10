@@ -1,4 +1,4 @@
-package com.example.strideset
+package ee.ut.cs.mad.strideset
 
 import org.junit.Test
 

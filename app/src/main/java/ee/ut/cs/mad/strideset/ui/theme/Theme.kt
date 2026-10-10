@@ -1,6 +1,5 @@
-package com.example.strideset.ui.theme
+package ee.ut.cs.mad.strideset.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

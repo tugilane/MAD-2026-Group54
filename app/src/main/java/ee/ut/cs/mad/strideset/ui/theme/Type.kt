@@ -1,4 +1,4 @@
-package com.example.strideset.ui.theme
+package ee.ut.cs.mad.strideset.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
