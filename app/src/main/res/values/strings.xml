@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">StrideSet</string>
+    <string name="start_workout">Start workout</string>
+    <string name="start_run">Start run</string>
+    <string name="nav_start">Start</string>
+    <string name="nav_calendar">Calendar</string>
+    <string name="nav_settings">Settings</string>
 </resources>
