@@ -1,5 +1,7 @@
 # MAD-2026-Group54
 
+[StrideSet Git Workflow](docs/git-workflow.md)
+
 | Stage | Product Lead | Design Lead | Development Lead | Quality Lead | Handover Date |
 |---|---|---|---|---|---|
 | 1. Plan | Marten Peljo, Oliver Piir (co-Lead) | Rander Erich Pikkani | Kristo Hark | Patrick Tiit Raal | 16.09 |
