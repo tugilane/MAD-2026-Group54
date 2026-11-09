@@ -1,5 +1,8 @@
 # Graphify Team Setup Design
 
+> **Superseded (2026-11-09):** decided not to commit `graphify-out/graph.json`. The pre-commit hook, the merge driver and the tracked graph were removed. Each developer runs `graphify update .` locally when needed. This document describes the old setup and is kept for history.
+
+
 ## Intent
 
 Keep the committed Graphify knowledge graph synchronized with the code that produced it, and make graph merges safe across branches.

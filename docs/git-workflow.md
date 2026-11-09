@@ -64,7 +64,7 @@ Do not force-push shared branches or rewrite existing `main` history. Correct me
 - Communicate overlapping work before changing the same files.
 - Review teammates’ PRs promptly and explain requested changes.
 - Keep secrets, signing keys, local configuration, and generated build files out of commits.
-- Follow the repository’s graphify instructions and hooks.
+- Don't commit `graphify-out/`. If you use Graphify, build the graph locally with `graphify update .` when you need it.
 - Judge contributions through completed work, reviews, and collaboration—not commit counts.
 
 Configure `main` protection to require pull requests, one approving review, and passing automated checks once those checks are available. These guidelines alone do not configure GitHub settings.
