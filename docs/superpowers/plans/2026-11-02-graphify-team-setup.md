@@ -1,5 +1,7 @@
 # Graphify Team Setup Implementation Plan
 
+> **Superseded (2026-11-09):** decided not to commit `graphify-out/graph.json`. The pre-commit hook, the merge driver and the tracked graph were removed. Each developer runs `graphify update .` locally when needed. This document describes the old setup and is kept for history.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make the repository ready to share Graphify's code graph through Git with automatic pre-commit refreshes and safe graph merges.
