@@ -18,10 +18,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -30,7 +28,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -38,15 +35,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ee.ut.cs.mad.strideset.R
+import ee.ut.cs.mad.strideset.ui.theme.InactiveOrPlaceholderColor
 import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-
-private val HomeBackground = Color(0xFFFFFEF5)
-private val HomeForeground = Color(0xFF3F3F46)
-private val HomeMuted = Color(0xFF73736C)
-private val HomeSelected = Color(0xFFF2F0E8)
 
 enum class HomeTab(@param:StringRes val label: Int, @param:DrawableRes val icon: Int) {
     Start(R.string.nav_start, R.drawable.ic_home),
@@ -64,8 +57,6 @@ fun HomeScreen(
 ) {
     Scaffold(
         modifier = modifier.fillMaxSize(),
-        containerColor = HomeBackground,
-        contentColor = HomeForeground,
         bottomBar = { HomeBottomBar(selectedTab = HomeTab.Start, onTabSelected = onTabSelected) }
     ) { innerPadding ->
         BoxWithConstraints(Modifier.fillMaxSize().padding(innerPadding)) {
@@ -79,7 +70,7 @@ fun HomeScreen(
                 Text(
                     text = date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)),
                     style = MaterialTheme.typography.labelSmall,
-                    color = HomeMuted
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = stringResource(R.string.app_name),
@@ -103,8 +94,7 @@ private fun HomeActionButton(@StringRes label: Int, onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = HomeForeground, contentColor = HomeBackground)
+        shape = MaterialTheme.shapes.medium,
     ) {
         Text(stringResource(label), style = MaterialTheme.typography.titleMedium)
     }
@@ -116,7 +106,7 @@ fun HomeBottomBar(
     onTabSelected: (HomeTab) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(color = HomeBackground, contentColor = HomeForeground) {
+    Surface(color = MaterialTheme.colorScheme.background, contentColor = MaterialTheme.colorScheme.onBackground) {
         Row(
             modifier = modifier
                 .fillMaxWidth()
@@ -129,9 +119,11 @@ fun HomeBottomBar(
                 val selected = tab == selectedTab
                 Surface(
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (selected) HomeSelected else HomeBackground,
-                    border = if (selected) BorderStroke(1.dp, Color(0xFFE3E0D6)) else null
+                    shape = MaterialTheme.shapes.medium,
+                    color = if (selected) {
+                        MaterialTheme.colorScheme.surfaceContainer
+                    } else MaterialTheme.colorScheme.background,
+                    border = if (selected) BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else null
                 ) {
                     Column(
                         modifier = Modifier
@@ -145,13 +137,13 @@ fun HomeBottomBar(
                             painter = painterResource(tab.icon),
                             contentDescription = null,
                             modifier = Modifier.size(22.dp),
-                            tint = if (selected) HomeForeground else HomeMuted
+                            tint = if (selected) MaterialTheme.colorScheme.primary else InactiveOrPlaceholderColor
                         )
                         Text(
                             text = stringResource(tab.label),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (selected) HomeForeground else HomeMuted
+                            color = if (selected) MaterialTheme.colorScheme.primary else InactiveOrPlaceholderColor
                         )
                     }
                 }
@@ -164,7 +156,7 @@ fun HomeBottomBar(
 @Preview(name = "Home medium", showBackground = true, widthDp = 402, heightDp = 874)
 @Composable
 private fun HomeScreenPreview() {
-    StrideSetTheme(darkTheme = false, dynamicColor = false) {
+    StrideSetTheme {
         HomeScreen(onStartWorkout = {}, onStartRun = {}, date = LocalDate.of(2026, 11, 5))
     }
 }
