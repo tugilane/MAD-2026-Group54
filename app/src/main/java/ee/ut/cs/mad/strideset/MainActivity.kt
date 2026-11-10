@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import ee.ut.cs.mad.strideset.ui.home.HomeScreen
+import ee.ut.cs.mad.strideset.ui.StrideSetApp
 import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
 
 class MainActivity : ComponentActivity() {
@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             StrideSetTheme {
-                HomeScreen(onStartWorkout = {}, onStartRun = {})
+                StrideSetApp()
             }
         }
     }

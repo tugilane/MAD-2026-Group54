@@ -22,7 +22,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ee.ut.cs.mad.strideset.R
+import ee.ut.cs.mad.strideset.ui.StrideSetScaffold
 import ee.ut.cs.mad.strideset.ui.theme.InactiveOrPlaceholderColor
 import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
 import java.time.LocalDate
@@ -52,39 +52,33 @@ fun HomeScreen(
     onStartWorkout: () -> Unit,
     onStartRun: () -> Unit,
     modifier: Modifier = Modifier,
-    onTabSelected: (HomeTab) -> Unit = {},
     date: LocalDate = LocalDate.now()
 ) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        bottomBar = { HomeBottomBar(selectedTab = HomeTab.Start, onTabSelected = onTabSelected) }
-    ) { innerPadding ->
-        BoxWithConstraints(Modifier.fillMaxSize().padding(innerPadding)) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .heightIn(min = maxHeight)
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-            ) {
-                Text(
-                    text = date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(Modifier.weight(1f))
-                Spacer(Modifier.height(32.dp))
-                HomeActionButton(R.string.start_workout, onStartWorkout)
-                Spacer(Modifier.height(48.dp))
-                HomeActionButton(R.string.start_run, onStartRun)
-                Spacer(Modifier.height(32.dp))
-                Spacer(Modifier.weight(1f))
-            }
+    BoxWithConstraints(modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .heightIn(min = maxHeight)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Text(
+                text = date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = stringResource(R.string.app_name),
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.height(32.dp))
+            HomeActionButton(R.string.start_workout, onStartWorkout)
+            Spacer(Modifier.height(48.dp))
+            HomeActionButton(R.string.start_run, onStartRun)
+            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.weight(1f))
         }
     }
 }
@@ -157,6 +151,13 @@ fun HomeBottomBar(
 @Composable
 private fun HomeScreenPreview() {
     StrideSetTheme {
-        HomeScreen(onStartWorkout = {}, onStartRun = {}, date = LocalDate.of(2026, 11, 5))
+        StrideSetScaffold(selectedTab = HomeTab.Start, onTabSelected = {}) { padding ->
+            HomeScreen(
+                onStartWorkout = {},
+                onStartRun = {},
+                modifier = Modifier.padding(padding),
+                date = LocalDate.of(2026, 11, 5)
+            )
+        }
     }
 }

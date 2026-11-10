@@ -5,4 +5,8 @@
     <string name="nav_start">Start</string>
     <string name="nav_calendar">Calendar</string>
     <string name="nav_settings">Settings</string>
+    <string name="choose_workout_title">Choose workout</string>
+    <string name="run_title">Run</string>
+    <string name="placeholder_message">This screen is coming next.</string>
+    <string name="navigate_back">Back</string>
 </resources>
