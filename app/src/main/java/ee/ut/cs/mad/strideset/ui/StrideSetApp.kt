@@ -36,8 +36,9 @@ private enum class AppDestination(
 fun StrideSetApp() {
     var destination by rememberSaveable { mutableStateOf(AppDestination.Home) }
 
+    val goBack = { destination = AppDestination.Home }
     BackHandler(enabled = destination != AppDestination.Home) {
-        destination = AppDestination.Home
+        goBack()
     }
 
     StrideSetScaffold(
@@ -52,12 +53,12 @@ fun StrideSetApp() {
                     onStartWorkout = { destination = AppDestination.ChooseWorkout },
                     onStartRun = { destination = AppDestination.Run }
                 )
+            } else if (destination == AppDestination.ChooseWorkout) {
+                ChooseWorkoutScreen(onBack = goBack)
             } else {
                 PlaceholderScreen(
                     title = destination.title,
-                    onBack = if (destination.tab == null) {
-                        { destination = AppDestination.Home }
-                    } else null
+                    onBack = if (destination.tab == null) goBack else null,
                 )
             }
         }
