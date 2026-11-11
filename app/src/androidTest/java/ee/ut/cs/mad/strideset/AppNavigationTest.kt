@@ -6,6 +6,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import org.junit.Rule
@@ -21,7 +22,7 @@ class AppNavigationTest {
         compose.onNodeWithText("Choose workout").assertIsDisplayed()
         compose.onNodeWithText("This screen is coming next.").assertIsDisplayed()
         compose.onNodeWithText("Calendar").assertDoesNotExist()
-        compose.onNodeWithText("Back").performClick()
+        compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("Start workout").assertIsDisplayed()
     }
 

@@ -18,7 +18,7 @@ val PrimaryActionColor = Color(0xFF41424C)
 val SecondaryTextColor = Color(0xFF78746F)
 
 /** Figma "Inactive / placeholder": color for placeholder text. */
-val InactiveOrPlaceholderColor = Color(0xFFA09B96)
+val InactiveColor = Color(0xFFA09B96)
 
 /** Figma "Border / divider": color of the border. */
 val BorderOrDividerColor = Color(0xFFD9D5CF)
