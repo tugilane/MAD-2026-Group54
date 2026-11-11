@@ -9,4 +9,5 @@
     <string name="run_title">Run</string>
     <string name="placeholder_message">This screen is coming next.</string>
     <string name="navigate_back">Back</string>
+    <string name="add_exercise">+ Add exercise</string>
 </resources>

@@ -35,7 +35,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ee.ut.cs.mad.strideset.R
 import ee.ut.cs.mad.strideset.ui.StrideSetScaffold
-import ee.ut.cs.mad.strideset.ui.theme.InactiveOrPlaceholderColor
+import ee.ut.cs.mad.strideset.ui.components.PrimaryButton
+import ee.ut.cs.mad.strideset.ui.components.SecondaryButton
+import ee.ut.cs.mad.strideset.ui.theme.Dimens
+import ee.ut.cs.mad.strideset.ui.theme.InactiveColor
 import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -60,7 +63,7 @@ fun HomeScreen(
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .heightIn(min = maxHeight)
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(horizontal = Dimens.spacingLarge, vertical = Dimens.spacingMedium)
         ) {
             Text(
                 text = date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL)),
@@ -69,28 +72,16 @@ fun HomeScreen(
             )
             Text(
                 text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleLarge
             )
             Spacer(Modifier.weight(1f))
-            Spacer(Modifier.height(32.dp))
-            HomeActionButton(R.string.start_workout, onStartWorkout)
+            Spacer(Modifier.height(Dimens.spacingXLarge))
+            PrimaryButton(R.string.start_workout, onStartWorkout)
             Spacer(Modifier.height(48.dp))
-            HomeActionButton(R.string.start_run, onStartRun)
-            Spacer(Modifier.height(32.dp))
+            PrimaryButton(R.string.start_run, onStartRun)
+            Spacer(Modifier.height(Dimens.spacingXLarge))
             Spacer(Modifier.weight(1f))
         }
-    }
-}
-
-@Composable
-private fun HomeActionButton(@StringRes label: Int, onClick: () -> Unit) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-        shape = MaterialTheme.shapes.medium,
-    ) {
-        Text(stringResource(label), style = MaterialTheme.typography.titleMedium)
     }
 }
 
@@ -105,9 +96,9 @@ fun HomeBottomBar(
             modifier = modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(horizontal = 12.dp, vertical = 12.dp)
+                .padding(horizontal = Dimens.spacingMedium, vertical = Dimens.spacingMedium)
                 .selectableGroup(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(Dimens.spacingMedium)
         ) {
             HomeTab.entries.forEach { tab ->
                 val selected = tab == selectedTab
@@ -123,21 +114,21 @@ fun HomeBottomBar(
                         modifier = Modifier
                             .selectable(selected = selected, role = Role.Tab, onClick = { onTabSelected(tab) })
                             .heightIn(min = 56.dp)
-                            .padding(horizontal = 4.dp, vertical = 8.dp),
+                            .padding(horizontal = Dimens.spacingXSmall, vertical = Dimens.spacingSmall),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically)
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spacingXSmall, Alignment.CenterVertically)
                     ) {
                         Icon(
                             painter = painterResource(tab.icon),
                             contentDescription = null,
-                            modifier = Modifier.size(22.dp),
-                            tint = if (selected) MaterialTheme.colorScheme.primary else InactiveOrPlaceholderColor
+                            modifier = Modifier.size(Dimens.bottomBarIconSize),
+                            tint = if (selected) MaterialTheme.colorScheme.primary else InactiveColor
                         )
                         Text(
                             text = stringResource(tab.label),
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (selected) MaterialTheme.colorScheme.primary else InactiveOrPlaceholderColor
+                            color = if (selected) MaterialTheme.colorScheme.primary else InactiveColor
                         )
                     }
                 }
