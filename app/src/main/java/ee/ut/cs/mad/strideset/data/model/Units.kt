@@ -10,11 +10,12 @@ data class UnitSettings(
     val weightUnit: WeightUnit = WeightUnit.KILOGRAMS,
 )
 
+
 private const val KG_PER_LB = 0.45359237
 private const val METERS_PER_MILE = 1609.344
 
 /** Converts a stored kg value into this unit for display. */
-fun WeightUnit.fromKg(kg: Double): Double = when (this) {
+fun WeightUnit.toLb(kg: Double): Double = when (this) {
     WeightUnit.KILOGRAMS -> kg
     WeightUnit.POUNDS -> kg / KG_PER_LB
 }
@@ -26,7 +27,15 @@ fun WeightUnit.toKg(value: Double): Double = when (this) {
 }
 
 /** Converts stored metres into this unit (km or mi) for display. */
-fun DistanceUnit.fromMeters(meters: Double): Double = when (this) {
+fun DistanceUnit.toMiles(meters: Double): Double = when (this) {
     DistanceUnit.KILOMETERS -> meters / 1000
     DistanceUnit.MILES -> meters / METERS_PER_MILE
+}
+
+/** In case we need to ever implement manual distance entry
+ * Converts displayed miles into storable met
+ */
+fun DistanceUnit.toMeters(value: Double) : Double = when (this) {
+    DistanceUnit.KILOMETERS -> value * 1000
+    DistanceUnit.MILES -> value * METERS_PER_MILE
 }
