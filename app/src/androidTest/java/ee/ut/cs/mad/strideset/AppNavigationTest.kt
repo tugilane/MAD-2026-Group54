@@ -17,10 +17,10 @@ class AppNavigationTest {
     val compose = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun workoutOpensItsPlaceholderAndBackReturnsHome() {
+    fun workoutOpensChooseWorkoutAndBackReturnsHome() {
         compose.onNodeWithText("Start workout").performClick()
         compose.onNodeWithText("Choose workout").assertIsDisplayed()
-        compose.onNodeWithText("This screen is coming next.").assertIsDisplayed()
+        compose.onNodeWithText("Start empty workout").assertIsDisplayed()
         compose.onNodeWithText("Calendar").assertDoesNotExist()
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("Start workout").assertIsDisplayed()
