@@ -14,6 +14,11 @@
     <string name="empty_workout_hint">Add exercises as you go</string>
     <string name="saved_plans">SAVED PLANS</string>
     <string name="create_plan">Create plan</string>
+    <string name="new_plan_title">New plan</string>
+    <string name="edit_plan_title">Edit plan</string>
+    <string name="workout_title">Workout</string>
+    <string name="empty_workout_title">Empty workout</string>
+    <string name="selected_plan_id">Selected plan ID: %1$d</string>
     <string name="edit_plan">Edit</string>
     <string name="sample_full_body">Full body</string>
     <string name="sample_upper_body">Upper body</string>
