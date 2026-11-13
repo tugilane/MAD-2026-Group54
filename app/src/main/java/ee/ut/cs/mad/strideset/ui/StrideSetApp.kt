@@ -43,8 +43,9 @@ fun StrideSetApp(
 ) {
     var destination by rememberSaveable { mutableStateOf(AppDestination.Home) }
 
+    val goBack = { destination = AppDestination.Home }
     BackHandler(enabled = destination != AppDestination.Home) {
-        destination = AppDestination.Home
+        goBack()
     }
 
     StrideSetScaffold(
@@ -65,12 +66,12 @@ fun StrideSetApp(
                     onDistanceUnitSelected = onDistanceUnitSelected,
                     onWeightUnitSelected = onWeightUnitSelected
                 )
+            } else if (destination == AppDestination.ChooseWorkout) {
+                ChooseWorkoutScreen(onBack = goBack)
             } else {
                 PlaceholderScreen(
                     title = destination.title,
-                    onBack = if (destination.tab == null) {
-                        { destination = AppDestination.Home }
-                    } else null
+                    onBack = if (destination.tab == null) goBack else null,
                 )
             }
         }

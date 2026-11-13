@@ -20,4 +20,15 @@
     <string name="distance_miles">Miles (mi)</string>
     <string name="settings_load_error">Could not load unit preferences. Reopen the app to try again.</string>
     <string name="settings_save_error">Could not save your unit selection. Please try again.</string>
+    <string name="start_empty_workout">Start empty workout</string>
+    <string name="empty_workout_hint">Add exercises as you go</string>
+    <string name="saved_plans">SAVED PLANS</string>
+    <string name="create_plan">Create plan</string>
+    <string name="edit_plan">Edit</string>
+    <string name="sample_full_body">Full body</string>
+    <string name="sample_upper_body">Upper body</string>
+    <plurals name="plan_exercise_count">
+        <item quantity="one">%d exercise</item>
+        <item quantity="other">%d exercises</item>
+    </plurals>
 </resources>
