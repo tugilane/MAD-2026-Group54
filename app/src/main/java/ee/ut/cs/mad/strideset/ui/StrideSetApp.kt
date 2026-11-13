@@ -16,6 +16,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import ee.ut.cs.mad.strideset.R
+import ee.ut.cs.mad.strideset.data.model.DistanceUnit
+import ee.ut.cs.mad.strideset.data.model.UnitSettings
+import ee.ut.cs.mad.strideset.data.model.WeightUnit
 import ee.ut.cs.mad.strideset.ui.home.HomeBottomBar
 import ee.ut.cs.mad.strideset.ui.home.HomeScreen
 import ee.ut.cs.mad.strideset.ui.home.HomeTab
@@ -33,7 +36,11 @@ private enum class AppDestination(
 }
 
 @Composable
-fun StrideSetApp() {
+fun StrideSetApp(
+    settings: UnitSettings,
+    onDistanceUnitSelected: (DistanceUnit) -> Unit,
+    onWeightUnitSelected: (WeightUnit) -> Unit
+) {
     var destination by rememberSaveable { mutableStateOf(AppDestination.Home) }
 
     val goBack = { destination = AppDestination.Home }
@@ -52,6 +59,12 @@ fun StrideSetApp() {
                 HomeScreen(
                     onStartWorkout = { destination = AppDestination.ChooseWorkout },
                     onStartRun = { destination = AppDestination.Run }
+                )
+            } else if (destination == AppDestination.Settings) {
+                SettingsScreen(
+                    settings = settings,
+                    onDistanceUnitSelected = onDistanceUnitSelected,
+                    onWeightUnitSelected = onWeightUnitSelected
                 )
             } else if (destination == AppDestination.ChooseWorkout) {
                 ChooseWorkoutScreen(onBack = goBack)
@@ -88,6 +101,10 @@ internal fun StrideSetScaffold(
 @Composable
 private fun StrideSetAppPreview() {
     StrideSetTheme {
-        StrideSetApp()
+        StrideSetApp(
+            settings = UnitSettings(),
+            onDistanceUnitSelected = {},
+            onWeightUnitSelected = {}
+        )
     }
 }

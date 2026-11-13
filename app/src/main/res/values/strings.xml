@@ -10,6 +10,16 @@
     <string name="placeholder_message">This screen is coming next.</string>
     <string name="navigate_back">Back</string>
     <string name="add_exercise">+ Add exercise</string>
+    <string name="weight_heading">Weight</string>
+    <string name="weight_description">Used for exercise load entries.</string>
+    <string name="weight_kilograms">Kilograms (kg)</string>
+    <string name="weight_pounds">Pounds (lb)</string>
+    <string name="distance_heading">Distance</string>
+    <string name="distance_description">Used for runs and pace calculations.</string>
+    <string name="distance_kilometers">Kilometres (km)</string>
+    <string name="distance_miles">Miles (mi)</string>
+    <string name="settings_load_error">Could not load unit preferences. Reopen the app to try again.</string>
+    <string name="settings_save_error">Could not save your unit selection. Please try again.</string>
     <string name="start_empty_workout">Start empty workout</string>
     <string name="empty_workout_hint">Add exercises as you go</string>
     <string name="saved_plans">SAVED PLANS</string>
