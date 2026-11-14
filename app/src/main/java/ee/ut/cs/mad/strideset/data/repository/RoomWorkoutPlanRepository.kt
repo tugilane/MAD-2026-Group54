@@ -19,6 +19,7 @@ class RoomWorkoutPlanRepository(private val dao: WorkoutPlanDao) : WorkoutPlanRe
         val name = plan.name.trim()
         require(name.isNotEmpty()) { "Plan name can't be blank" }
         require(plan.exercises.isNotEmpty()) { "A plan needs at least one exercise" }
+        require(plan.exercises.all { it.targetSets > 0 && it.targetReps > 0}) { "Target sets and reps must be at least 1" }
 
         val items = plan.exercises.mapIndexed { index, item ->
             PlanExerciseEntity(

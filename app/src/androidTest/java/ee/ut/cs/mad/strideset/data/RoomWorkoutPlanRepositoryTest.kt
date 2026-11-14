@@ -109,4 +109,15 @@ class RoomWorkoutPlanRepositoryTest {
             runBlocking { plans.savePlan(pushDay().copy(exercises = emptyList())) }
         }
     }
+
+    @Test
+    fun zeroSetsOrRepsIsRejected() {
+        val bench = exercise("Bench press")
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { plans.savePlan(pushDay().copy(exercises = listOf(PlanExercise(bench, 0, 8)))) }
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            runBlocking { plans.savePlan(pushDay().copy(exercises = listOf(PlanExercise(bench, 3, 0)))) }
+        }
+    }
 }
