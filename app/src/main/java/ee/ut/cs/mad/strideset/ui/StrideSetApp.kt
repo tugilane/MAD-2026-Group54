@@ -102,12 +102,12 @@ fun StrideSetApp(
             } else if (destination == AppDestination.PlanEditor) {
                 val planId = selectedPlanId
                 if (planId == null) {
-                    PlanEditorScreen(plan = null, onBack = goBack)
+                    PlanEditorScreen(plan = null, weightUnit = settings.weightUnit, onBack = goBack)
                 } else {
                     val plans: List<WorkoutPlan>? by savedPlans.collectAsState(initial = null)
                     val plan = plans?.firstOrNull { it.id == planId }
                     if (plan != null) {
-                        PlanEditorScreen(plan = plan, onBack = goBack)
+                        PlanEditorScreen(plan = plan, weightUnit = settings.weightUnit, onBack = goBack)
                     } else {
                         ScreenLayout(
                             title = stringResource(R.string.edit_plan_title),
