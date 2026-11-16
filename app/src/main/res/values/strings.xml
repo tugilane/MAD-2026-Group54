@@ -30,6 +30,14 @@
     <string name="empty_workout_title">Empty workout</string>
     <string name="selected_plan_id">Selected plan ID: %1$d</string>
     <string name="edit_plan">Edit</string>
+    <string name="save_plan">Save</string>
+    <string name="plan_name">PLAN NAME</string>
+    <string name="plan_name_hint">e.g. Lower body</string>
+    <string name="plan_exercises">EXERCISES</string>
+    <string name="plan_exercise_targets">%1$d sets × %2$d reps</string>
+    <string name="remove_plan_exercise">Remove</string>
+    <string name="plan_loading">Loading plan…</string>
+    <string name="plan_unavailable">This plan is no longer available.</string>
     <plurals name="plan_exercise_count">
         <item quantity="one">%d exercise</item>
         <item quantity="other">%d exercises</item>

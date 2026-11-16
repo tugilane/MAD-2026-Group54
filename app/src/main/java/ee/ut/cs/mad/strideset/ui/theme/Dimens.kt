@@ -15,6 +15,7 @@ object Dimens {
     val buttonHeight = 50.dp
     val minTouchTarget = 48.dp // Smallest area you can reliably tap.
     val bottomBarIconSize = 22.dp
-    val backButtonSize = 32.dp
+    val backButtonSize = minTouchTarget
+    val backIconSize = 22.dp
     val smallIconSize = 16.dp
 }
