@@ -29,7 +29,6 @@ class DefaultAppContainer(context: Context) : AppContainer {
     override val workoutPlanRepository: WorkoutPlanRepository by lazy {
         RoomWorkoutPlanRepository(database.workoutPlanDao())
     }
-}
     override val settingsRepository: SettingsRepository by lazy {
         DataStoreSettingsRepository(context.applicationContext.settingsDataStore)
     }
