@@ -21,6 +21,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val settingsRepository = (application as StrideSetApplication).container.settingsRepository
+        val savedPlans = (application as StrideSetApplication).container.workoutPlanRepository.observePlans()
         val settingsFlow = settingsRepository.settings.catch { error ->
             if (error is IOException) {
                 Toast.makeText(this@MainActivity, R.string.settings_load_error, Toast.LENGTH_LONG).show()
@@ -37,6 +38,7 @@ class MainActivity : ComponentActivity() {
             StrideSetTheme {
                 StrideSetApp(
                     settings = settings,
+                    savedPlans = savedPlans,
                     onDistanceUnitSelected = { unit ->
                         saveSetting { settingsRepository.setDistanceUnit(unit) }
                     },

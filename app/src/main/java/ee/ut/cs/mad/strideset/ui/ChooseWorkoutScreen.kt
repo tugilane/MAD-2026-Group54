@@ -24,9 +24,17 @@ import ee.ut.cs.mad.strideset.R
 import ee.ut.cs.mad.strideset.ui.components.ScreenLayout
 import ee.ut.cs.mad.strideset.ui.theme.Dimens
 
-/** Draws the Choose workout screen. The caller decides where the Back button leads. */
+/** A row in the saved-plan list. The name and count are displayed, and the ID identifies the plan to start or edit. */
+internal data class WorkoutPlanChoice(val id: Long, val name: String, val exerciseCount: Int)
+
+/** Displays plans supplied by the caller and reports which action the user chose. */
 @Composable
-internal fun ChooseWorkoutScreen(onBack: () -> Unit) {
+internal fun ChooseWorkoutScreen(
+    plans: List<WorkoutPlanChoice>,
+    onBack: () -> Unit,
+    onStartWorkout: (Long?) -> Unit,
+    onEditPlan: (Long?) -> Unit,
+) {
     val colors = MaterialTheme.colorScheme
     val shape = MaterialTheme.shapes.medium
     // ScreenLayout supplies the shared title and spacing. Its actions slot sits to the right.
@@ -43,9 +51,8 @@ internal fun ChooseWorkoutScreen(onBack: () -> Unit) {
             modifier = Modifier.verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(Dimens.spacingSmall),
         ) {
-            // This Surface only draws the card. When the workout flow is ready, give it
-            // a click handler and let the caller decide what to open.
             Surface(
+                onClick = { onStartWorkout(null) },
                 shape = shape,
                 border = BorderStroke(1.dp, colors.outline),
             ) {
@@ -67,8 +74,7 @@ internal fun ChooseWorkoutScreen(onBack: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(stringResource(R.string.saved_plans), style = MaterialTheme.typography.labelSmall)
-                // Static label styled like the future Create plan button.
-                Surface(shape = shape, color = colors.primary) {
+                Surface(onClick = { onEditPlan(null) }, shape = shape, color = colors.primary) {
                     Text(
                         stringResource(R.string.create_plan),
                         modifier = Modifier.padding(Dimens.spacingSmall),
@@ -76,32 +82,30 @@ internal fun ChooseWorkoutScreen(onBack: () -> Unit) {
                     )
                 }
             }
-            // Sample rows for the layout. Saved plans will come from storage in a later step. Remove this when implementing actual solution
-            SamplePlanRow(stringResource(R.string.sample_full_body), 3)
-            SamplePlanRow(stringResource(R.string.sample_upper_body), 2)
+            plans.forEach { plan ->
+                WorkoutPlanRow(plan, onStart = { onStartWorkout(plan.id) }, onEdit = { onEditPlan(plan.id) })
+            }
         }
     }
 }
 
-/** Draws one sample plan. It receives display values and doesn't read from storage. */
 @Composable
-private fun SamplePlanRow(name: String, exerciseCount: Int) {
+private fun WorkoutPlanRow(plan: WorkoutPlanChoice, onStart: () -> Unit, onEdit: () -> Unit) {
     val colors = MaterialTheme.colorScheme
-    Surface(shape = MaterialTheme.shapes.medium, color = colors.surfaceVariant) {
+    Surface(onClick = onStart, shape = MaterialTheme.shapes.medium, color = colors.surfaceVariant) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(Dimens.spacingLarge),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
-                Text(name, style = MaterialTheme.typography.titleMedium)
+                Text(plan.name, style = MaterialTheme.typography.titleMedium)
                 // Android picks “exercise” or “exercises” based on the count.
                 Text(
-                    pluralStringResource(R.plurals.plan_exercise_count, exerciseCount, exerciseCount),
+                    pluralStringResource(R.plurals.plan_exercise_count, plan.exerciseCount, plan.exerciseCount),
                     color = colors.onSurfaceVariant,
                 )
             }
-            // The Edit label shows where the action will go once plan editing exists.
-            Surface(shape = MaterialTheme.shapes.medium, border = BorderStroke(1.dp, colors.outline), color = colors.surfaceVariant) {
+            Surface(onClick = onEdit, shape = MaterialTheme.shapes.medium, border = BorderStroke(1.dp, colors.outline), color = colors.surfaceVariant) {
                 Text(stringResource(R.string.edit_plan), Modifier.padding(Dimens.spacingSmall))
             }
         }
