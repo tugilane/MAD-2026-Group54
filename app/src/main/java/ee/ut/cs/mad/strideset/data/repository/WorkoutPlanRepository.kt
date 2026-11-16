@@ -11,7 +11,8 @@ interface WorkoutPlanRepository {
 
     /**
      * Inserts the plan when plan.id == 0, otherwise replaces the existing one. Returns the plan id.
-     * @throws IllegalArgumentException if the name is blank or the plan has no exercises
+     * @throws IllegalArgumentException if the name is blank or the plan has no exercises,
+     * or an exercise has fewer than 1 target set or rep
      */
     suspend fun savePlan(plan: WorkoutPlan): Long
 
