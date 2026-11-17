@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import ee.ut.cs.mad.strideset.R
 import ee.ut.cs.mad.strideset.data.model.PlanExercise
 import ee.ut.cs.mad.strideset.data.model.WeightUnit
+import ee.ut.cs.mad.strideset.data.model.toLb
 import ee.ut.cs.mad.strideset.data.model.WorkoutPlan
 import ee.ut.cs.mad.strideset.ui.components.DraftSet
 import ee.ut.cs.mad.strideset.ui.components.PlanExercisePopup
@@ -99,14 +100,19 @@ internal fun PlanEditorScreen(plan: WorkoutPlan?, weightUnit: WeightUnit, onBack
 private fun PlanExerciseRow(exercise: PlanExercise, weightUnit: WeightUnit) {
     var showPopup by rememberSaveable { mutableStateOf(false) }
     // Saved plans provide a set count and one rep target. Weight starts blank for now (no database table for it yet).
-    var draftSets by rememberSaveable(exercise) {
-        mutableStateOf(ArrayList(List(exercise.targetSets) { DraftSet(reps = exercise.targetReps.toString(), weight = "") }))
+    var draftSets by rememberSaveable(exercise, weightUnit) {
+        mutableStateOf(ArrayList(exercise.sets.map { set ->
+            DraftSet(
+                reps = set.reps.toString(),
+                weight = set.weightKg?.let { weightUnit.toLb(it).toString() }.orEmpty(),
+            )
+        }))
     }
     if (showPopup) {
         PlanExercisePopup(
             exerciseName = exercise.exercise.name,
             initialSets = draftSets,
-            defaultReps = exercise.targetReps,
+            defaultReps = exercise.sets.firstOrNull()?.reps ?: 8,
             weightUnit = weightUnit,
             onDismiss = { showPopup = false },
             onDone = {
