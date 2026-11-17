@@ -57,4 +57,5 @@
     <string name="search_exercises">Existing exercises</string>
     <string name="apply_exercise">Apply</string>
     <string name="exercise_name_taken">An exercise with this name already exists.</string>
+    <string name="reorder_exercises">Reorder</string>
 </resources>
