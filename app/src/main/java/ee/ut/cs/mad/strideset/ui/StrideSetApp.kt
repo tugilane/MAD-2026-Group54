@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.Text
 import androidx.compose.ui.tooling.preview.Preview
 import ee.ut.cs.mad.strideset.R
+import ee.ut.cs.mad.strideset.data.model.Exercise
 import ee.ut.cs.mad.strideset.data.model.DistanceUnit
 import ee.ut.cs.mad.strideset.data.model.UnitSettings
 import ee.ut.cs.mad.strideset.data.model.WeightUnit
@@ -48,6 +49,7 @@ private enum class AppDestination(
 fun StrideSetApp(
     settings: UnitSettings,
     savedPlans: Flow<List<WorkoutPlan>>,
+    availableExercises: Flow<List<Exercise>> = emptyFlow(),
     onDistanceUnitSelected: (DistanceUnit) -> Unit,
     onWeightUnitSelected: (WeightUnit) -> Unit
 ) {
@@ -100,14 +102,15 @@ fun StrideSetApp(
             } else if (destination == AppDestination.Workout) {
                 WorkoutScreen(planId = selectedPlanId, onBack = goBack)
             } else if (destination == AppDestination.PlanEditor) {
+                val exercises by availableExercises.collectAsState(initial = emptyList())
                 val planId = selectedPlanId
                 if (planId == null) {
-                    PlanEditorScreen(plan = null, weightUnit = settings.weightUnit, onBack = goBack)
+                    PlanEditorScreen(plan = null, weightUnit = settings.weightUnit, exercises = exercises, onBack = goBack)
                 } else {
                     val plans: List<WorkoutPlan>? by savedPlans.collectAsState(initial = null)
                     val plan = plans?.firstOrNull { it.id == planId }
                     if (plan != null) {
-                        PlanEditorScreen(plan = plan, weightUnit = settings.weightUnit, onBack = goBack)
+                        PlanEditorScreen(plan = plan, weightUnit = settings.weightUnit, exercises = exercises, onBack = goBack)
                     } else {
                         ScreenLayout(
                             title = stringResource(R.string.edit_plan_title),

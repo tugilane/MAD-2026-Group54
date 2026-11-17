@@ -52,4 +52,9 @@
         <item quantity="one">%d exercise</item>
         <item quantity="other">%d exercises</item>
     </plurals>
+    <string name="choose_exercise">Choose exercise</string>
+    <string name="custom_exercise">Custom exercise</string>
+    <string name="search_exercises">Existing exercises</string>
+    <string name="apply_exercise">Apply</string>
+    <string name="exercise_name_taken">An exercise with this name already exists.</string>
 </resources>
