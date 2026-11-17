@@ -39,4 +39,25 @@ class DatabaseMigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate2To3KeepsExercisesPlansAndPlanItems() {
+        helper.createDatabase(dbName, 2).use { db ->
+            db.execSQL("INSERT INTO exercises (id, name, type, isCustom) VALUES (42, 'Cable fly', 'CABLE', 1)")
+            db.execSQL("INSERT INTO workout_plans (id, name) VALUES (7, 'My plan')")
+            db.execSQL("INSERT INTO plan_exercises (planId, position, exerciseId, targetSets, targetReps) VALUES (7, 0, 42, 3, 12)")
+        }
+        helper.runMigrationsAndValidate(dbName, 3, true).use { db ->
+            db.query("SELECT e.name, p.name, i.targetReps FROM plan_exercises i JOIN exercises e ON e.id = i.exerciseId JOIN workout_plans p ON p.id = i.planId").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals("Cable fly", cursor.getString(0))
+                assertEquals("My plan", cursor.getString(1))
+                assertEquals(12, cursor.getInt(2))
+            }
+            db.query("SELECT COUNT(*) FROM runs").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals(0, cursor.getInt(0))
+            }
+        }
+    }
 }

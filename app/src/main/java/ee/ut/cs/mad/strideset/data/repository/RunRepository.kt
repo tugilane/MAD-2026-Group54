@@ -20,6 +20,10 @@ interface RunRepository {
     /** Saves progress. Call this every few seconds while tracking, so a killed app loses almost nothing. */
     suspend fun updateProgress(runId: Long, distanceMeters: Double, activeDuration: Duration)
 
+    suspend fun pauseRun(runId: Long)
+
+    suspend fun resumeRun(runId: Long)
+
     suspend fun finishRun(runId: Long)
 
     suspend fun discardRun(runId: Long)

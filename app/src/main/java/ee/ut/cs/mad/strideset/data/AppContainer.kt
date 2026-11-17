@@ -9,6 +9,8 @@ import ee.ut.cs.mad.strideset.data.repository.RoomExerciseRepository
 import ee.ut.cs.mad.strideset.data.repository.RoomWorkoutPlanRepository
 import ee.ut.cs.mad.strideset.data.repository.WorkoutPlanRepository
 import ee.ut.cs.mad.strideset.data.repository.SettingsRepository
+import ee.ut.cs.mad.strideset.data.repository.RunRepository
+import ee.ut.cs.mad.strideset.data.repository.RoomRunRepository
 
 private val Context.settingsDataStore by preferencesDataStore(name = "settings")
 
@@ -17,9 +19,11 @@ interface AppContainer {
     val exerciseRepository: ExerciseRepository
     val workoutPlanRepository: WorkoutPlanRepository
     val settingsRepository: SettingsRepository
+    val runRepository: RunRepository
 }
 
 class DefaultAppContainer(context: Context) : AppContainer {
+    override val runRepository: RunRepository by lazy { RoomRunRepository(database.runDao()) }
     private val database: StrideSetDatabase by lazy { StrideSetDatabase.create(context) }
 
     override val exerciseRepository: ExerciseRepository by lazy {
