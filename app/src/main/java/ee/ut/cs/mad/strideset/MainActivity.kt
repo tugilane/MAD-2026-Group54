@@ -41,6 +41,9 @@ class MainActivity : ComponentActivity() {
                     settings = settings,
                     savedPlans = savedPlans,
                     availableExercises = exercises,
+                    onSavePlan = { plan ->
+                        (application as StrideSetApplication).container.workoutPlanRepository.savePlan(plan)
+                    },
                     onDistanceUnitSelected = { unit ->
                         saveSetting { settingsRepository.setDistanceUnit(unit) }
                     },

@@ -22,16 +22,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ee.ut.cs.mad.strideset.R
-import ee.ut.cs.mad.strideset.data.model.PlanExercise
+import ee.ut.cs.mad.strideset.data.model.Exercise
 import ee.ut.cs.mad.strideset.data.model.WeightUnit
-import ee.ut.cs.mad.strideset.data.model.toLb
 import ee.ut.cs.mad.strideset.ui.theme.Dimens
 
 /** Shows an exercise and keeps the edits confirmed in its popup. */
 @Composable
 internal fun PlanExerciseRow(
-    exercise: PlanExercise,
+    exercise: Exercise,
     weightUnit: WeightUnit,
+    draftSets: List<DraftSet>,
+    onSetsChanged: (List<DraftSet>) -> Unit,
     onChooseExercise: () -> Unit,
     onRemove: () -> Unit,
     // The screen tells this card when it should allow dragging instead of editing.
@@ -41,28 +42,18 @@ internal fun PlanExerciseRow(
 ) {
     // Opening details shows this row's set popup.
     var showPopup by rememberSaveable { mutableStateOf(false) }
-    // Start with this occurrence's saved sets in the selected weight unit.
-    var draftSets by rememberSaveable(weightUnit) {
-        // Keep text as text while editing, including fields the user has temporarily cleared.
-        mutableStateOf(ArrayList(exercise.sets.map { set ->
-            DraftSet(
-                reps = set.reps.toString(),
-                // Stored weights are kilograms. Show the unit chosen in Settings.
-                weight = set.weightKg?.let { weightUnit.toLb(it).toString() }.orEmpty(),
-            )
-        }))
-    }
+    // The editor owns these sets so Save can read every row's latest changes.
     if (showPopup) {
         // The popup makes its own copy, so Cancel leaves these draft sets alone.
         PlanExercisePopup(
-            exerciseName = exercise.exercise.name,
+            exerciseName = exercise.name,
             initialSets = draftSets,
-            defaultReps = exercise.sets.firstOrNull()?.reps ?: 8, // Used when Add set is pressed.
+            defaultReps = draftSets.firstOrNull()?.reps?.toIntOrNull() ?: 8, // Used when Add set is pressed.
             weightUnit = weightUnit,
             onDismiss = { showPopup = false },
             onDone = {
                 // Done updates the editor draft. No database write happens here.
-                draftSets = ArrayList(it)
+                onSetsChanged(it)
                 showPopup = false
             },
         )
@@ -83,7 +74,7 @@ internal fun PlanExerciseRow(
             // The name button is disabled while the user arranges the cards.
             Surface(onClick = onChooseExercise, enabled = !reordering, shape = shape, border = BorderStroke(1.dp, colors.onSurfaceVariant), modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    exercise.exercise.name,
+                    exercise.name,
                     modifier = Modifier.padding(Dimens.spacingSmall),
                     color = colors.onSurfaceVariant,
                     style = MaterialTheme.typography.titleMedium,

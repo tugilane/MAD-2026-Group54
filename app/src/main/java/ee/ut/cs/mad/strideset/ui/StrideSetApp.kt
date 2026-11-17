@@ -50,6 +50,7 @@ fun StrideSetApp(
     settings: UnitSettings,
     savedPlans: Flow<List<WorkoutPlan>>,
     availableExercises: Flow<List<Exercise>> = emptyFlow(),
+    onSavePlan: (suspend (WorkoutPlan) -> Unit)? = null,
     onDistanceUnitSelected: (DistanceUnit) -> Unit,
     onWeightUnitSelected: (WeightUnit) -> Unit
 ) {
@@ -105,12 +106,12 @@ fun StrideSetApp(
                 val exercises by availableExercises.collectAsState(initial = emptyList())
                 val planId = selectedPlanId
                 if (planId == null) {
-                    PlanEditorScreen(plan = null, weightUnit = settings.weightUnit, exercises = exercises, onBack = goBack)
+                    PlanEditorScreen(plan = null, weightUnit = settings.weightUnit, exercises = exercises, onBack = goBack, onSave = onSavePlan)
                 } else {
                     val plans: List<WorkoutPlan>? by savedPlans.collectAsState(initial = null)
                     val plan = plans?.firstOrNull { it.id == planId }
                     if (plan != null) {
-                        PlanEditorScreen(plan = plan, weightUnit = settings.weightUnit, exercises = exercises, onBack = goBack)
+                        PlanEditorScreen(plan = plan, weightUnit = settings.weightUnit, exercises = exercises, onBack = goBack, onSave = onSavePlan)
                     } else {
                         ScreenLayout(
                             title = stringResource(R.string.edit_plan_title),

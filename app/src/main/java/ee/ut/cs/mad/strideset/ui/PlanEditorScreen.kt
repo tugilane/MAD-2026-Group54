@@ -23,6 +23,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.runtime.getValue
@@ -49,12 +50,16 @@ import ee.ut.cs.mad.strideset.data.model.PlanSet
 import ee.ut.cs.mad.strideset.data.model.PlanExercise
 import ee.ut.cs.mad.strideset.data.model.WeightUnit
 import ee.ut.cs.mad.strideset.data.model.toLb
+import ee.ut.cs.mad.strideset.data.model.toKg
 import ee.ut.cs.mad.strideset.data.model.WorkoutPlan
 import ee.ut.cs.mad.strideset.ui.components.ExercisePickerPopup
 import ee.ut.cs.mad.strideset.ui.components.DraftSet
 import ee.ut.cs.mad.strideset.ui.components.PlanExerciseRow
 import ee.ut.cs.mad.strideset.ui.components.ScreenLayout
 import ee.ut.cs.mad.strideset.ui.theme.Dimens
+import kotlinx.coroutines.launch
+import java.io.IOException
+import android.database.sqlite.SQLiteException
 
 /**
  * A null plan opens the New plan form. An existing plan opens Edit plan
@@ -67,6 +72,7 @@ internal fun PlanEditorScreen(
     weightUnit: WeightUnit,
     exercises: List<Exercise>,
     onBack: () -> Unit,
+    onSave: (suspend (WorkoutPlan) -> Unit)? = null,
 ) {
     // Both New plan and Edit plan use this screen.
     val title = if (plan == null) R.string.new_plan_title else R.string.edit_plan_title
@@ -75,7 +81,12 @@ internal fun PlanEditorScreen(
     // Each occurrence has its own key, even when the exercise is selected twice.
     var entries by rememberSaveable(plan?.id) {
         mutableStateOf(ArrayList(plan?.exercises.orEmpty().mapIndexed { index, item ->
-            PlanExerciseEntry(exerciseId = item.exercise.id, savedPosition = index)
+            PlanExerciseEntry(
+                exerciseId = item.exercise.id, savedPosition = index,
+                sets = ArrayList(item.sets.map { set ->
+                    DraftSet(set.reps.toString(), set.weightKg?.let { weightUnit.toLb(it).toString() }.orEmpty())
+                }),
+            )
         }))
     }
     var showPicker by rememberSaveable { mutableStateOf(false) }
@@ -83,6 +94,15 @@ internal fun PlanEditorScreen(
     var replacingEntryKey by rememberSaveable { mutableStateOf<String?>(null) }
     // This switch changes cards from editing to dragging.
     var reordering by rememberSaveable { mutableStateOf(false) }
+    var saving by remember { mutableStateOf(false) }
+    var saveError by remember { mutableStateOf<Int?>(null) }
+    val scope = rememberCoroutineScope()
+
+    // Resolve the row's current name while its sets stay in the editor draft.
+    fun exerciseFor(entry: PlanExerciseEntry): Exercise = entry.customName?.let {
+        Exercise(name = it, type = ee.ut.cs.mad.strideset.data.model.ExerciseType.OTHER, isCustom = true)
+    } ?: exercises.firstOrNull { it.id == entry.exerciseId }
+        ?: requireNotNull(entry.savedPosition?.let { plan?.exercises?.getOrNull(it)?.exercise })
     // Remember how far down the form the user has scrolled.
     val scrollState = rememberScrollState()
     // Store each card's visible position so we know which card the finger is over.
@@ -162,6 +182,7 @@ internal fun PlanEditorScreen(
         actions = {
             // Press once to start reordering, then press again to return to editing.
             TextButton(
+                enabled = !saving,
                 onClick = { reordering = !reordering },
                 modifier = Modifier.semantics { selected = reordering },
                 colors = ButtonDefaults.textButtonColors(
@@ -172,10 +193,42 @@ internal fun PlanEditorScreen(
             ) {
                 Text(stringResource(R.string.reorder_exercises))
             }
-            // Saving comes later.
+            // Save the current row order, including all changes confirmed in the popups.
             TextButton(
-                onClick = {},
-                enabled = false,
+                onClick = {
+                    saving = true
+                    draggedKey = null
+                    saveError = null
+                    scope.launch {
+                        try {
+                            val draft = WorkoutPlan(
+                                id = plan?.id ?: 0L,
+                                name = name,
+                                exercises = entries.map { entry ->
+                                    PlanExercise(exerciseFor(entry), entry.sets.map { set ->
+                                        PlanSet(
+                                            reps = set.reps.trim().toInt(),
+                                            weightKg = set.weight.trim().takeIf { it.isNotEmpty() }?.let {
+                                                weightUnit.toKg(it.toDouble())
+                                            },
+                                        )
+                                    })
+                                },
+                            )
+                            onSave?.invoke(draft)
+                            onBack()
+                        } catch (_: IllegalArgumentException) {
+                            saveError = R.string.plan_save_input_error
+                        } catch (_: SQLiteException) {
+                            saveError = R.string.plan_save_error
+                        } catch (_: IOException) {
+                            saveError = R.string.plan_save_error
+                        } finally {
+                            saving = false
+                        }
+                    }
+                },
+                enabled = !saving && onSave != null,
                 modifier = Modifier.heightIn(min = Dimens.buttonHeight),
                 colors = ButtonDefaults.textButtonColors(
                     disabledContentColor = MaterialTheme.colorScheme.primary,
@@ -185,13 +238,16 @@ internal fun PlanEditorScreen(
             }
         },
     ) {
+        saveError?.let {
+            Text(stringResource(it), color = MaterialTheme.colorScheme.error)
+        }
         // Scroll the form while the header and Add exercise stay visible.
         Column(
             modifier = Modifier.fillMaxWidth().weight(1f)
                 // Update the visible area when the window or keyboard changes size.
                 .onGloballyPositioned { viewport = it.boundsInRoot() }
-                .pointerInput(reordering) {
-                    if (reordering) detectDragGestures(
+                .pointerInput(reordering, saving) {
+                    if (reordering && !saving) detectDragGestures(
                         onDragStart = { position ->
                             // Find the card where the drag began.
                             dragY = viewport.top + position.y
@@ -218,6 +274,7 @@ internal fun PlanEditorScreen(
         ) {
             Text(stringResource(R.string.plan_name), style = MaterialTheme.typography.labelSmall)
             OutlinedTextField(
+                enabled = !saving,
                 value = name,
                 onValueChange = { name = it },
                 placeholder = { Text(stringResource(R.string.plan_name_hint)) },
@@ -233,17 +290,7 @@ internal fun PlanEditorScreen(
             // Give each selected plan its own exercise draft state.
             key(plan?.id) {
                 entries.forEach { entry ->
-                    // Original position finds the right saved sets even after rows move.
-                    val savedExercise = entry.savedPosition?.let { plan?.exercises?.getOrNull(it) }
-                    // A row can contain a draft custom exercise or an exercise from the library.
-                    val selectedExercise = entry.customName?.let {
-                        Exercise(name = it, type = ee.ut.cs.mad.strideset.data.model.ExerciseType.OTHER, isCustom = true)
-                    } ?: exercises.firstOrNull { it.id == entry.exerciseId }
-                        ?: savedExercise?.exercise
-                    val exercise = selectedExercise?.let {
-                        // Newly added rows start with one set of eight reps.
-                        PlanExercise(it, savedExercise?.sets ?: listOf(PlanSet(reps = 8)))
-                    }
+                    val exercise = exerciseFor(entry)
                     if (exercise != null) {
                         key(entry.key) {
                             // This key keeps edits with the same row when its position changes.
@@ -253,7 +300,13 @@ internal fun PlanEditorScreen(
                             PlanExerciseRow(
                                 exercise = exercise,
                                 weightUnit = weightUnit,
-                                reordering = reordering,
+                                draftSets = entry.sets,
+                                onSetsChanged = { sets ->
+                                    entries = ArrayList(entries.map {
+                                        if (it.key == entry.key) it.copy(sets = ArrayList(sets)) else it
+                                    })
+                                },
+                                reordering = reordering || saving,
                                 modifier = Modifier.graphicsLayer {
                                     // Draw the held card under the finger while its place in the list changes.
                                     translationY = if (draggedKey == entry.key)
@@ -277,14 +330,15 @@ internal fun PlanEditorScreen(
         }
         // This button sits below the scrolling form so it stays within reach.
         OutlinedButton(
-            enabled = !reordering,
+            enabled = !reordering && !saving,
             onClick = {
                 replacingEntryKey = null
                 showPicker = true
             },
-            modifier = Modifier.fillMaxWidth().padding(top = Dimens.spacingSmall),
+            modifier = Modifier.fillMaxWidth().padding(top = Dimens.spacingSmall)
+                .heightIn(min = Dimens.buttonHeight * 1.5f),
         ) {
-            Text(stringResource(R.string.add_exercise))
+            Text(stringResource(R.string.add_exercise), style = MaterialTheme.typography.titleMedium)
         }
     }
 }
@@ -297,6 +351,8 @@ private data class PlanExerciseEntry(
     val customName: String? = null,
     // Remember where to find this row's original sets in the saved plan.
     val savedPosition: Int? = null,
+    // All popup edits live here, ready for Save. New rows start with one set.
+    val sets: ArrayList<DraftSet> = arrayListOf(DraftSet("8", "")),
     // A separate row identifier allows the same exercise to appear more than once.
     val key: String = java.util.UUID.randomUUID().toString(),
 ) : java.io.Serializable
