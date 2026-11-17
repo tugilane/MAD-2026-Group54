@@ -27,6 +27,9 @@ interface WorkoutPlanDao {
     @Insert
     suspend fun insertItems(items: List<PlanExerciseEntity>)
 
+    @Insert
+    suspend fun insertSets(sets: List<PlanSetEntity>)
+
     @Query("DELETE FROM plan_exercises WHERE planId = :planId")
     suspend fun deleteItems(planId: Long)
 
@@ -34,20 +37,22 @@ interface WorkoutPlanDao {
     suspend fun deletePlan(id: Long)
 
     /**
-     * Saves a plan and its exercise list in one transaction: either everything is saved or nothing.
-     * New plan (id == 0): insert it. Existing plan: update the name and replace its whole exercise list.
+     * Saves a plan with its exercises and sets in one transaction: either everything is saved or nothing.
+     * New plan (id == 0): insert it. Existing plan: update the name and replace its exercises and sets.
      * Returns the plan id.
      */
     @Transaction
-    suspend fun savePlan(plan: WorkoutPlanEntity, items: List<PlanExerciseEntity>): Long {
+    suspend fun savePlan(plan: WorkoutPlanEntity, items: List<PlanExerciseEntity>, sets: List<PlanSetEntity>): Long {
         val planId = if (plan.id == 0L) {
             insertPlan(plan)
         } else {
             updatePlan(plan)
-            deleteItems(plan.id)
+            deleteItems(plan.id) // CASCADE also deletes their plan_sets rows
             plan.id
         }
+        // Exercises first: each set row must point at an existing exercise row (foreign key).
         insertItems(items.map { it.copy(planId = planId) })
+        insertSets(sets.map { it.copy(planId = planId) })
         return planId
     }
 }

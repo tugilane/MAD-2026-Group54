@@ -12,10 +12,12 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ExerciseEntity::class,
         WorkoutPlanEntity::class,
         PlanExerciseEntity::class,
+        PlanSetEntity::class,
     ],
-    version = 2,
+    version = 3,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // adds workout_plans and plan_exercises
+        // 2 -> 3 is MIGRATION_2_3 (manual, in Migrations.kt)
     ],
 )
 abstract class StrideSetDatabase : RoomDatabase() {
@@ -32,6 +34,7 @@ abstract class StrideSetDatabase : RoomDatabase() {
                         seedSamplePlans(db)
                     }
                 })
+                .addMigrations(MIGRATION_2_3)
                 .build()
     }
 }
