@@ -74,4 +74,32 @@ class DatabaseMigrationTest {
             }
         }
     }
+
+    @Test
+    fun migrate3To4KeepsPlansAndAddsWorkoutTables() {
+        // A version 3 database with one plan: Squat, 1 set of 8 x 60 kg.
+        helper.createDatabase(dbName, 3).use { db ->
+            db.execSQL("INSERT INTO exercises (id, name, type, isCustom) VALUES (1, 'Squat', 'BARBELL', 0)")
+            db.execSQL("INSERT INTO workout_plans (id, name) VALUES (1, 'Legs')")
+            db.execSQL("INSERT INTO plan_exercises (planId, position, exerciseId) VALUES (1, 0, 1)")
+            db.execSQL(
+                "INSERT INTO plan_sets (planId, exercisePosition, setIndex, reps, weightKg) VALUES (1, 0, 0, 8, 60.0)"
+            )
+        }
+
+        // Run the 3 -> 4 AutoMigration and check the result matches 4.json.
+        helper.runMigrationsAndValidate(dbName, 4, true).use { db ->
+            db.query("SELECT reps, weightKg FROM plan_sets").use { cursor ->
+                cursor.moveToFirst()
+                assertEquals(8, cursor.getInt(0))
+                assertEquals(60.0, cursor.getDouble(1), 0.0)
+            }
+            for (table in listOf("workouts", "workout_exercises", "workout_sets")) {
+                db.query("SELECT COUNT(*) FROM $table").use { cursor ->
+                    cursor.moveToFirst()
+                    assertEquals(0, cursor.getInt(0))
+                }
+            }
+        }
+    }
 }
