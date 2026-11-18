@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,9 +47,13 @@ fun StrideSetApp(
     settings: UnitSettings,
     savedPlans: Flow<List<WorkoutPlan>>,
     onDistanceUnitSelected: (DistanceUnit) -> Unit,
-    onWeightUnitSelected: (WeightUnit) -> Unit
+    onWeightUnitSelected: (WeightUnit) -> Unit,
+    openRunRequest: Int = 0,
 ) {
     var destination by rememberSaveable { mutableStateOf(AppDestination.Home) }
+    LaunchedEffect(openRunRequest) {
+        if (openRunRequest > 0) destination = AppDestination.Run
+    }
 
     var selectedPlanId by rememberSaveable { mutableStateOf<Long?>(null) }
     val goBack = {

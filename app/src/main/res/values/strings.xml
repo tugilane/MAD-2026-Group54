@@ -7,6 +7,12 @@
     <string name="nav_settings">Settings</string>
     <string name="choose_workout_title">Choose workout</string>
     <string name="run_title">Run</string>
+    <string name="run_notification_channel">Running sessions</string>
+    <string name="run_notification_active">Run in progress</string>
+    <string name="run_notification_paused">Run paused</string>
+    <string name="run_notification_time">%1$s active time · Tap to return</string>
+    <string name="run_location_unavailable">Enable precise location and GPS, then resume your run.</string>
+    <string name="run_tracking_error">Tracking paused because progress could not be saved or GPS could not start. Please try again.</string>
     <string name="placeholder_message">This screen is coming next.</string>
     <string name="navigate_back">Back</string>
     <string name="add_exercise">+ Add exercise</string>
