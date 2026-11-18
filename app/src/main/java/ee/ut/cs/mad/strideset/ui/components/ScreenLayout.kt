@@ -61,7 +61,7 @@ fun ScreenLayout(
                     Icon(
                         painter = painterResource(R.drawable.ic_back),
                         contentDescription = stringResource(R.string.navigate_back),
-                        modifier = Modifier.size(Dimens.smallIconSize)
+                        modifier = Modifier.size(Dimens.backIconSize)
                     )
                 }
                 Spacer(Modifier.width(Dimens.spacingMedium))

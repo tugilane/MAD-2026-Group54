@@ -30,6 +30,12 @@ interface WorkoutPlanDao {
     @Insert
     suspend fun insertSets(sets: List<PlanSetEntity>)
 
+    @Insert
+    suspend fun insertCustomExercise(exercise: ExerciseEntity): Long
+
+    @Query("SELECT id FROM exercises WHERE name = :name COLLATE NOCASE LIMIT 1")
+    suspend fun exerciseIdByName(name: String): Long?
+
     @Query("DELETE FROM plan_exercises WHERE planId = :planId")
     suspend fun deleteItems(planId: Long)
 
@@ -42,7 +48,20 @@ interface WorkoutPlanDao {
      * Returns the plan id.
      */
     @Transaction
-    suspend fun savePlan(plan: WorkoutPlanEntity, items: List<PlanExerciseEntity>, sets: List<PlanSetEntity>): Long {
+    suspend fun savePlan(
+        plan: WorkoutPlanEntity,
+        items: List<PlanExerciseEntity>,
+        sets: List<PlanSetEntity>,
+        customExercises: Map<Int, ExerciseEntity> = emptyMap(), // Optional argument. It's ignored when all exercises already exist.
+    ): Long {
+        // Create custom exercises inside the same transaction as the plan.
+        // Repeated custom names share one library entry, including after a retry.
+        val resolvedItems = items.map { item ->
+            val custom = customExercises[item.position]
+            if (custom == null) item else item.copy(
+                exerciseId = exerciseIdByName(custom.name) ?: insertCustomExercise(custom)
+            )
+        }
         val planId = if (plan.id == 0L) {
             insertPlan(plan)
         } else {
@@ -51,7 +70,7 @@ interface WorkoutPlanDao {
             plan.id
         }
         // Exercises first: each set row must point at an existing exercise row (foreign key).
-        insertItems(items.map { it.copy(planId = planId) })
+        insertItems(resolvedItems.map { it.copy(planId = planId) })
         insertSets(sets.map { it.copy(planId = planId) })
         return planId
     }
