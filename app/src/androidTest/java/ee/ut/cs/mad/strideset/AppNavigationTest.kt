@@ -27,7 +27,7 @@ class AppNavigationTest {
     }
 
     @Test
-    fun runOpensItsPlaceholderAndAndroidBackReturnsHome() {
+    fun runOpensItsReadyScreenAndAndroidBackReturnsHome() {
         compose.onNodeWithText("Start run").performClick()
         compose.onNodeWithText("Run").assertIsDisplayed()
         compose.onNodeWithText("Calendar").assertDoesNotExist()

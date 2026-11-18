@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,9 +55,16 @@ fun StrideSetApp(
     availableExercises: Flow<List<Exercise>> = emptyFlow(),
     onSavePlan: (suspend (WorkoutPlan) -> Unit)? = null,
     onDistanceUnitSelected: (DistanceUnit) -> Unit,
-    onWeightUnitSelected: (WeightUnit) -> Unit
+    onWeightUnitSelected: (WeightUnit) -> Unit,
+    openRunRequest: Int = 0,
+    runContent: @Composable (() -> Unit) -> Unit = { back ->
+        PlaceholderScreen(title = R.string.run_title, onBack = back)
+    },
 ) {
     var destination by rememberSaveable { mutableStateOf(AppDestination.Home) }
+    LaunchedEffect(openRunRequest) {
+        if (openRunRequest > 0) destination = AppDestination.Run
+    }
 
     var selectedPlanId by rememberSaveable { mutableStateOf<Long?>(null) }
     val goBack = {
@@ -66,7 +74,7 @@ fun StrideSetApp(
         }
         selectedPlanId = null
     }
-    BackHandler(enabled = destination != AppDestination.Home) {
+    BackHandler(enabled = destination != AppDestination.Home && destination != AppDestination.Run) {
         goBack()
     }
 
@@ -131,6 +139,8 @@ fun StrideSetApp(
                     // Empty until finished workouts and runs are stored.
                     activities = emptyList(),
                 )
+            } else if (destination == AppDestination.Run) {
+                runContent(goBack)
             } else {
                 PlaceholderScreen(
                     title = destination.title,

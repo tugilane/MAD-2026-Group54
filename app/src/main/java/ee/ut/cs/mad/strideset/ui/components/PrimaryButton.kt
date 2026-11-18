@@ -19,9 +19,10 @@ import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
  * For buttons such as "Start workout", "Start run", "Finish Workout" etc.
  * */
 @Composable
-fun PrimaryButton(@StringRes label: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun PrimaryButton(@StringRes label: Int, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     Button(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = Dimens.buttonHeight),
