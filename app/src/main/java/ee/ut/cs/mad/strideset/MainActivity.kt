@@ -17,6 +17,7 @@ import ee.ut.cs.mad.strideset.data.model.UnitSettings
 import ee.ut.cs.mad.strideset.ui.StrideSetApp
 import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
 import ee.ut.cs.mad.strideset.running.RunTrackingService
+import ee.ut.cs.mad.strideset.ui.running.RunRoute
 import java.io.IOException
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
@@ -47,6 +48,14 @@ class MainActivity : ComponentActivity() {
                     settings = settings,
                     savedPlans = savedPlans,
                     openRunRequest = openRunRequest,
+                    runContent = { back ->
+                        RunRoute(
+                            activity = this@MainActivity,
+                            container = (application as StrideSetApplication).container,
+                            distanceUnit = settings.distanceUnit,
+                            onBack = back,
+                        )
+                    },
                     onDistanceUnitSelected = { unit ->
                         saveSetting { settingsRepository.setDistanceUnit(unit) }
                     },

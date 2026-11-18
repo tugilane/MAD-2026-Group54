@@ -78,6 +78,7 @@ class RunTrackingServiceTest {
         compose.onNodeWithText("Run").assertIsDisplayed()
         assertFalse(compose.activity.intent.hasExtra(RunTrackingService.EXTRA_OPEN_RUN))
         compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Keep tracking in background").performClick()
         compose.onNodeWithText("Settings").performClick()
         compose.activityRule.scenario.recreate()
         compose.onNodeWithText("Distance").assertIsDisplayed()

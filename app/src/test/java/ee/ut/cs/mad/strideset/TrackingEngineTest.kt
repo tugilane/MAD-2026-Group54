@@ -38,6 +38,40 @@ class TrackingEngineTest {
         assertEquals(0.0, engine.snapshot().distanceMeters, 0.0)
     }
 
+    @Test fun mixedAccuracyJitterDoesNotAddDistance() {
+        val engine = engine()
+        engine.accept(fix())
+        repeat(30) {
+            now += 1000
+            engine.accept(fix(longitude = 0.000072, accuracy = 30.0))
+            now += 1000
+            engine.accept(fix())
+        }
+        assertEquals(0.0, engine.snapshot().distanceMeters, 0.0)
+    }
+
+    @Test fun resumeRejectsFixesCapturedDuringThePause() {
+        val engine = engine()
+        engine.pause()
+        now = 5000
+        engine.resume()
+        engine.accept(fix(at = 4000))
+        now = 6000
+        engine.accept(fix(longitude = 0.0001))
+        assertEquals(0.0, engine.snapshot().distanceMeters, 0.0)
+    }
+
+    @Test fun movementAfterAStationaryPeriodIsNotTreatedAsASignalGap() {
+        val engine = engine()
+        repeat(31) {
+            now = it * 1000L
+            engine.accept(fix())
+        }
+        now = 31_000
+        engine.accept(fix(longitude = 0.000045))
+        assertEquals(5.0, engine.snapshot().distanceMeters, 0.1)
+    }
+
     @Test fun rejectsStaleInaccurateImpossibleAndOutOfOrderFixes() {
         val engine = engine()
         engine.accept(fix())

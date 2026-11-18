@@ -7,6 +7,8 @@ import java.time.Instant
 import java.time.LocalDate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.flow
+import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
@@ -32,10 +34,11 @@ class FakeRunRepository : RunRepository {
     }
     override suspend fun pauseRun(runId: Long) { active.value = active.value!!.copy(isPaused = true) }
     override suspend fun resumeRun(runId: Long) { active.value = active.value!!.copy(isPaused = false) }
-    override suspend fun finishRun(runId: Long) {
+    override suspend fun finishRun(runId: Long): Run {
         if (failSave) error("Disk full")
         saved = active.value!!.copy(finishedAt = Instant.EPOCH.plusSeconds(100), isPaused = false)
         active.value = null
+        return checkNotNull(saved)
     }
     override suspend fun discardRun(runId: Long) { active.value = null }
     override fun observeFinishedRuns(start: LocalDate, endInclusive: LocalDate) = MutableStateFlow(listOfNotNull(saved))
@@ -177,5 +180,21 @@ class RunSessionTest {
         assertEquals(Duration.ofSeconds(2), state.state.value.run!!.activeDuration)
         assertFalse(state.state.value.serviceRunning)
         assertEquals(1, source.stops)
+    }
+
+    @Test fun finishDoesNotDependOnASeparateReadAfterCommitting() = runBlocking {
+        val flakyReads = object : RunRepository by repository {
+            override fun observeRun(id: Long) = flow {
+                if (repository.saved != null) throw IOException("Read unavailable after committed save")
+                emit(repository.active.value)
+            }
+        }
+        val session = RunSession(flakyReads, source, state) { now }
+        session.start()
+        now = 3000
+        session.finish()
+        assertTrue(state.state.value.run!!.isFinished)
+        assertFalse(state.state.value.serviceRunning)
+        assertEquals(Duration.ofSeconds(3), repository.saved!!.activeDuration)
     }
 }

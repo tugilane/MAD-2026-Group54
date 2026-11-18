@@ -41,7 +41,7 @@ enum class RunCommand { START, PAUSE, RESUME, FINISH, DISCARD }
 /** Owns the engine, location subscription, timer and all session writes. */
 class RunTrackingService : Service() {
     private sealed interface Event {
-        data class Command(val command: RunCommand, val startId: Int) : Event
+        data class Command(val command: RunCommand, val startId: Int, val requestId: String) : Event
         data object Tick : Event
     }
 
@@ -66,6 +66,7 @@ class RunTrackingService : Service() {
         )
         scope.launch {
             for (event in events) {
+                var succeeded = true
                 try {
                     when (event) {
                         is Event.Command -> when (event.command) {
@@ -87,9 +88,11 @@ class RunTrackingService : Service() {
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (error: Exception) {
+                    succeeded = false
                     Log.e(TAG, "Running command failed", error)
                     session.fail(getString(R.string.run_tracking_error))
                 }
+                if (event is Event.Command) tracker.completeCommand(event.requestId, succeeded)
                 updateNotificationAndPower()
                 // A cold pause/finish/discard must not leave an ordinary background service alive.
                 if (event is Event.Command && (!tracker.state.value.serviceRunning || !foreground) && stopSelfResult(event.startId)) {
@@ -112,6 +115,7 @@ class RunTrackingService : Service() {
             if (!tracker.state.value.serviceRunning) stopSelfResult(startId)
             return START_NOT_STICKY
         }
+        val requestId = intent?.getStringExtra(EXTRA_REQUEST_ID).orEmpty()
         if (command == RunCommand.START || command == RunCommand.RESUME) {
             try {
                 check(locationReady(this)) { getString(R.string.run_location_unavailable) }
@@ -123,11 +127,12 @@ class RunTrackingService : Service() {
             } catch (error: RuntimeException) {
                 Log.e(TAG, "Could not start foreground tracking", error)
                 tracker.publish(tracker.state.value.copy(error = getString(R.string.run_location_unavailable)))
+                tracker.completeCommand(requestId, false)
                 stopSelfResult(startId)
                 return START_NOT_STICKY
             }
         }
-        events.trySend(Event.Command(command, startId))
+        events.trySend(Event.Command(command, startId, requestId))
         return START_NOT_STICKY
     }
 
@@ -181,16 +186,22 @@ class RunTrackingService : Service() {
 
     companion object {
         const val EXTRA_OPEN_RUN = "ee.ut.cs.mad.strideset.OPEN_RUN"
+        private const val EXTRA_REQUEST_ID = "ee.ut.cs.mad.strideset.RUN_REQUEST_ID"
         private const val CHANNEL_ID = "running"
         private const val NOTIFICATION_ID = 1001
         private const val TAG = "RunTrackingService"
 
         /** Start/resume only from a visible activity, after its location permission request succeeds. */
-        fun sendCommand(activity: ComponentActivity, command: RunCommand) {
+        fun sendCommand(
+            activity: ComponentActivity,
+            command: RunCommand,
+            requestId: String = java.util.UUID.randomUUID().toString(),
+        ) {
             check(activity.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
                 "Running commands must come from the visible app"
             }
             val intent = Intent(activity, RunTrackingService::class.java).setAction(command.name)
+                .putExtra(EXTRA_REQUEST_ID, requestId)
             if (command == RunCommand.START || command == RunCommand.RESUME) {
                 check(locationReady(activity)) { activity.getString(R.string.run_location_unavailable) }
                 ContextCompat.startForegroundService(activity, intent)

@@ -72,8 +72,7 @@ class RunSession(
         if (engine == null && !loadCheckpoint()) return
         pause()
         val id = checkNotNull(run).id
-        repository.finishRun(id)
-        run = checkNotNull(repository.observeRun(id).first())
+        run = repository.finishRun(id)
         engine = null
         error = null
         publish()

@@ -49,6 +49,9 @@ fun StrideSetApp(
     onDistanceUnitSelected: (DistanceUnit) -> Unit,
     onWeightUnitSelected: (WeightUnit) -> Unit,
     openRunRequest: Int = 0,
+    runContent: @Composable (() -> Unit) -> Unit = { back ->
+        PlaceholderScreen(title = R.string.run_title, onBack = back)
+    },
 ) {
     var destination by rememberSaveable { mutableStateOf(AppDestination.Home) }
     LaunchedEffect(openRunRequest) {
@@ -63,7 +66,7 @@ fun StrideSetApp(
         }
         selectedPlanId = null
     }
-    BackHandler(enabled = destination != AppDestination.Home) {
+    BackHandler(enabled = destination != AppDestination.Home && destination != AppDestination.Run) {
         goBack()
     }
 
@@ -103,6 +106,8 @@ fun StrideSetApp(
                 WorkoutScreen(planId = selectedPlanId, onBack = goBack)
             } else if (destination == AppDestination.PlanEditor) {
                 PlanEditorScreen(planId = selectedPlanId, onBack = goBack)
+            } else if (destination == AppDestination.Run) {
+                runContent(goBack)
             } else {
                 PlaceholderScreen(
                     title = destination.title,

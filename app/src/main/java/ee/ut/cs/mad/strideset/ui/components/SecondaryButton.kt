@@ -21,9 +21,10 @@ import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
  * Secondary action buttons, such as "Add exercise" or "Discard".
  * */
 @Composable
-fun SecondaryButton(@StringRes label: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun SecondaryButton(@StringRes label: Int, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     OutlinedButton(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = Dimens.buttonHeight),

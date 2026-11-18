@@ -27,6 +27,16 @@ interface RunDao {
     @Query("UPDATE runs SET finishedAtMillis = :finishedAtMillis, isPaused = 0 WHERE id = :id AND finishedAtMillis IS NULL")
     suspend fun finish(id: Long, finishedAtMillis: Long): Int
 
+    @Query("SELECT * FROM runs WHERE id = :id")
+    suspend fun getRun(id: Long): RunEntity?
+
+    @Transaction
+    suspend fun finishAndGet(id: Long, finishedAtMillis: Long): RunEntity {
+        check(finish(id, finishedAtMillis) == 1)
+        // A read failure rolls back the finish, so callers can safely retry the whole operation.
+        return checkNotNull(getRun(id))
+    }
+
     @Query("DELETE FROM runs WHERE id = :id AND finishedAtMillis IS NULL")
     suspend fun discard(id: Long): Int
 

@@ -24,7 +24,8 @@ interface RunRepository {
 
     suspend fun resumeRun(runId: Long)
 
-    suspend fun finishRun(runId: Long)
+    /** Atomically finishes the run and returns the saved row, including its finish time. */
+    suspend fun finishRun(runId: Long): Run
 
     suspend fun discardRun(runId: Long)
 

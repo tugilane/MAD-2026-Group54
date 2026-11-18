@@ -25,7 +25,7 @@ class RoomRunRepository(
 
     override suspend fun pauseRun(runId: Long) { check(dao.setPaused(runId, true) == 1) }
     override suspend fun resumeRun(runId: Long) { check(dao.setPaused(runId, false) == 1) }
-    override suspend fun finishRun(runId: Long) { check(dao.finish(runId, clock.millis()) == 1) }
+    override suspend fun finishRun(runId: Long) = dao.finishAndGet(runId, clock.millis()).toModel()
     override suspend fun discardRun(runId: Long) { check(dao.discard(runId) == 1) }
 
     override fun observeFinishedRuns(start: LocalDate, endInclusive: LocalDate) =

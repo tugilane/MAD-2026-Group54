@@ -67,18 +67,19 @@ class TrackingEngine(
     fun accept(fix: LocationFix) {
         if (paused) return
         val age = nowMillis() - fix.elapsedRealtimeMillis
-        if (age !in 0..10_000 || !fix.latitude.isFinite() || !fix.longitude.isFinite() ||
+        if (age !in 0..10_000 || fix.elapsedRealtimeMillis < resumedAt ||
+            !fix.latitude.isFinite() || !fix.longitude.isFinite() ||
             fix.latitude !in -90.0..90.0 || fix.longitude !in -180.0..180.0 ||
             !fix.accuracyMeters.isFinite() || fix.accuracyMeters !in 0.0..30.0) return
         if (lastAcceptedAt != null && fix.elapsedRealtimeMillis <= lastAcceptedAt!!) return
 
         val previous = anchor
-        if (previous != null && fix.elapsedRealtimeMillis - previous.elapsedRealtimeMillis <= 30_000) {
+        if (previous != null && fix.elapsedRealtimeMillis - lastAcceptedAt!! <= 30_000) {
             val meters = distance(previous, fix)
             val seconds = (fix.elapsedRealtimeMillis - previous.elapsedRealtimeMillis) / 1000.0
             if (meters / seconds > 10.0) return
             // Suppress tiny movements inside normal GPS jitter; calibrate outdoors before relaxing this.
-            if (meters >= max(3.0, min(previous.accuracyMeters, fix.accuracyMeters) / 2)) {
+            if (meters >= max(3.0, max(previous.accuracyMeters, fix.accuracyMeters) / 2)) {
                 distanceMeters += meters
                 anchor = fix
             }
