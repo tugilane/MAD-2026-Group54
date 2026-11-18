@@ -24,6 +24,7 @@ import ee.ut.cs.mad.strideset.data.model.DistanceUnit
 import ee.ut.cs.mad.strideset.data.model.UnitSettings
 import ee.ut.cs.mad.strideset.data.model.WeightUnit
 import ee.ut.cs.mad.strideset.data.model.WorkoutPlan
+import ee.ut.cs.mad.strideset.ui.calendar.CalendarScreen
 import ee.ut.cs.mad.strideset.ui.components.ScreenLayout
 import ee.ut.cs.mad.strideset.ui.home.HomeBottomBar
 import ee.ut.cs.mad.strideset.ui.home.HomeScreen
@@ -31,6 +32,7 @@ import ee.ut.cs.mad.strideset.ui.home.HomeTab
 import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import java.time.YearMonth
 
 private enum class AppDestination(
     @param:StringRes val title: Int,
@@ -121,6 +123,14 @@ fun StrideSetApp(
                         }
                     }
                 }
+            } else if (destination == AppDestination.Calendar) {
+                var calendarMonth by rememberSaveable { mutableStateOf(YearMonth.now()) }
+                CalendarScreen(
+                    shownMonth = calendarMonth,
+                    onMonthChange = { newMonth -> calendarMonth = newMonth },
+                    // Empty until finished workouts and runs are stored.
+                    activities = emptyList(),
+                )
             } else {
                 PlaceholderScreen(
                     title = destination.title,

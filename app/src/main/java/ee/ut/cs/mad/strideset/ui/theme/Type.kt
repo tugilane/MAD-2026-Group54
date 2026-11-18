@@ -34,6 +34,12 @@ val Typography = Typography(
         fontWeight = FontWeight.SemiBold,
         fontSize = 18.sp,
     ),
+    bodySmall = TextStyle(
+        fontFamily = DmSans,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        lineHeight = 16.sp
+    ),
     bodyMedium = TextStyle(
         fontFamily = DmSans,
         fontWeight = FontWeight.Normal,

@@ -18,4 +18,7 @@ object Dimens {
     val backButtonSize = minTouchTarget
     val backIconSize = 22.dp
     val smallIconSize = 16.dp
+    val calendarDayCircleSize = 30.dp
+    val activityDotSize = 7.dp
+    val activityIconTileSize = 38.dp
 }

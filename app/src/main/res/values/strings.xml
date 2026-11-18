@@ -60,4 +60,20 @@
     <string name="reorder_exercises">Reorder</string>
     <string name="plan_save_error">Could not save the plan. Please try again.</string>
     <string name="plan_save_input_error">Could not save these plan details. Check the name, exercises, reps and weights.</string>
+    <string name="calendar_previous_month">Previous month</string>
+    <string name="calendar_next_month">Next month</string>
+    <string-array name="calendar_weekday_letters">
+        <item>M</item>
+        <item>T</item>
+        <item>W</item>
+        <item>T</item>
+        <item>F</item>
+        <item>S</item>
+        <item>S</item>
+    </string-array>
+    <string name="calendar_no_activities">No activities on this day</string>
+    <plurals name="calendar_activity_count">
+        <item quantity="one">%d activity</item>
+        <item quantity="other">%d activities</item>
+    </plurals>
 </resources>
