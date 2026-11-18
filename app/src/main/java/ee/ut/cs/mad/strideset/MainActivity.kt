@@ -15,13 +15,18 @@ import ee.ut.cs.mad.strideset.ui.StrideSetApp
 import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
 import java.io.IOException
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val settingsRepository = (application as StrideSetApplication).container.settingsRepository
-        val savedPlans = (application as StrideSetApplication).container.workoutPlanRepository.observePlans()
+        val container = (application as StrideSetApplication).container
+        val settingsRepository = container.settingsRepository
+        val savedPlans = container.workoutPlanRepository.observePlans()
+        val workoutRepository = container.workoutRepository
+        val activeWorkout = workoutRepository.observeActiveWorkout()
         val settingsFlow = settingsRepository.settings.catch { error ->
             if (error is IOException) {
                 Toast.makeText(this@MainActivity, R.string.settings_load_error, Toast.LENGTH_LONG).show()
@@ -39,6 +44,32 @@ class MainActivity : ComponentActivity() {
                 StrideSetApp(
                     settings = settings,
                     savedPlans = savedPlans,
+                    activeWorkoutFlow = activeWorkout,
+                    onStartWorkout = { planId ->
+                        try {
+                            val current = activeWorkout.first()
+                            when {
+                                current == null -> workoutRepository.startWorkout(planId)
+                                current.exercises.isEmpty() && planId != null ->
+                                    workoutRepository.startWorkoutReplacingEmpty(planId, current.id)
+                            }
+                            true
+                        } catch (error: Exception) {
+                            if (error is CancellationException) throw error
+                            Toast.makeText(this@MainActivity, R.string.workout_start_error, Toast.LENGTH_LONG).show()
+                            false
+                        }
+                    },
+                    onDiscardWorkout = { workoutId ->
+                        try {
+                            workoutRepository.discardWorkout(workoutId)
+                            true
+                        } catch (error: Exception) {
+                            if (error is CancellationException) throw error
+                            Toast.makeText(this@MainActivity, R.string.workout_discard_error, Toast.LENGTH_LONG).show()
+                            false
+                        }
+                    },
                     onDistanceUnitSelected = { unit ->
                         saveSetting { settingsRepository.setDistanceUnit(unit) }
                     },

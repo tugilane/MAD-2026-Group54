@@ -27,6 +27,8 @@
     <string name="new_plan_title">New plan</string>
     <string name="edit_plan_title">Edit plan</string>
     <string name="workout_title">Workout</string>
+    <string name="workout_start_error">Could not start the workout. Please try again.</string>
+    <string name="workout_discard_error">Could not discard the workout. Please try again.</string>
     <string name="empty_workout_title">Empty workout</string>
     <string name="empty_workout_message">Add your first exercise when you are ready.</string>
     <string name="elapsed_time">Elapsed time</string>

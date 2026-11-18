@@ -32,6 +32,16 @@ class RoomWorkoutRepository(
         dao.observeById(id).map { it?.toModel() }
 
     override suspend fun startWorkout(planId: Long?): Long {
+        val (workout, exercises) = workoutForPlan(planId)
+        return dao.startWorkout(workout, exercises)
+    }
+
+    override suspend fun startWorkoutReplacingEmpty(planId: Long, emptyWorkoutId: Long): Long {
+        val (workout, exercises) = workoutForPlan(planId)
+        return dao.startWorkout(workout, exercises, replaceEmptyWorkoutId = emptyWorkoutId)
+    }
+
+    private suspend fun workoutForPlan(planId: Long?): Pair<WorkoutEntity, List<StartingExercise>> {
         val plan = planId?.let { id ->
             requireNotNull(planRepository.getPlan(id)) { "No plan with id $id" }
         }
@@ -55,7 +65,7 @@ class RoomWorkoutRepository(
             planId = plan?.id,
             startedAt = clock.millis(),
         )
-        return dao.startWorkout(workout, exercises)
+        return workout to exercises
     }
 
     override suspend fun addExercise(workoutId: Long, exerciseId: Long): Long =

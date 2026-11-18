@@ -6,20 +6,24 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import ee.ut.cs.mad.strideset.R
 import ee.ut.cs.mad.strideset.data.model.DistanceUnit
 import ee.ut.cs.mad.strideset.data.model.UnitSettings
 import ee.ut.cs.mad.strideset.data.model.WeightUnit
+import ee.ut.cs.mad.strideset.data.model.Workout
 import ee.ut.cs.mad.strideset.data.model.WorkoutPlan
 import ee.ut.cs.mad.strideset.ui.home.HomeBottomBar
 import ee.ut.cs.mad.strideset.ui.home.HomeScreen
@@ -27,6 +31,7 @@ import ee.ut.cs.mad.strideset.ui.home.HomeTab
 import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.launch
 
 private enum class AppDestination(
     @param:StringRes val title: Int,
@@ -45,10 +50,15 @@ private enum class AppDestination(
 fun StrideSetApp(
     settings: UnitSettings,
     savedPlans: Flow<List<WorkoutPlan>>,
+    activeWorkoutFlow: Flow<Workout?>,
+    onStartWorkout: suspend (Long?) -> Boolean,
+    onDiscardWorkout: suspend (Long) -> Boolean,
     onDistanceUnitSelected: (DistanceUnit) -> Unit,
     onWeightUnitSelected: (WeightUnit) -> Unit
 ) {
     var destination by rememberSaveable { mutableStateOf(AppDestination.Home) }
+    val coroutineScope = rememberCoroutineScope()
+    val activeWorkout by activeWorkoutFlow.collectAsState(initial = null)
 
     var selectedPlanId by rememberSaveable { mutableStateOf<Long?>(null) }
     val goBack = {
@@ -86,8 +96,12 @@ fun StrideSetApp(
                     plans = plans.map { WorkoutPlanChoice(it.id, it.name, it.exercises.size) },
                     onBack = goBack,
                     onStartWorkout = { planId ->
-                        selectedPlanId = planId
-                        destination = AppDestination.Workout
+                        coroutineScope.launch {
+                            if (onStartWorkout(planId)) {
+                                selectedPlanId = planId
+                                destination = AppDestination.Workout
+                            }
+                        }
                     },
                     onEditPlan = { planId ->
                         selectedPlanId = planId
@@ -95,7 +109,26 @@ fun StrideSetApp(
                     },
                 )
             } else if (destination == AppDestination.Workout) {
-                WorkoutScreen(planId = selectedPlanId, onBack = goBack)
+                val workout = activeWorkout
+                if (workout == null) {
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+                } else {
+                    WorkoutScreen(
+                        workout = workout,
+                        onBack = goBack,
+                        onAddExercise = {},
+                        onSetChanged = {},
+                        onFinishWorkout = {},
+                        onDiscardWorkout = {
+                            coroutineScope.launch {
+                                if (onDiscardWorkout(workout.id)) {
+                                    destination = AppDestination.ChooseWorkout
+                                    selectedPlanId = null
+                                }
+                            }
+                        },
+                    )
+                }
             } else if (destination == AppDestination.PlanEditor) {
                 PlanEditorScreen(planId = selectedPlanId, onBack = goBack)
             } else {
@@ -134,6 +167,9 @@ private fun StrideSetAppPreview() {
         StrideSetApp(
             settings = UnitSettings(),
             savedPlans = emptyFlow(),
+            activeWorkoutFlow = emptyFlow(),
+            onStartWorkout = { true },
+            onDiscardWorkout = { true },
             onDistanceUnitSelected = {},
             onWeightUnitSelected = {}
         )

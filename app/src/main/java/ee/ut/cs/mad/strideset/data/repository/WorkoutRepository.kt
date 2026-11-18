@@ -18,6 +18,9 @@ interface WorkoutRepository {
      */
     suspend fun startWorkout(planId: Long? = null): Long
 
+    /** Replaces the specified active workout only if it is still empty, then starts the plan. */
+    suspend fun startWorkoutReplacingEmpty(planId: Long, emptyWorkoutId: Long): Long
+
     /** Adds an exercise to the workout and returns the new WorkoutExercise id. */
     suspend fun addExercise(workoutId: Long, exerciseId: Long): Long
 

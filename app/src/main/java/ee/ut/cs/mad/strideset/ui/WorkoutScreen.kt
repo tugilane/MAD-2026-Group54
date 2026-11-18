@@ -2,19 +2,23 @@ package ee.ut.cs.mad.strideset.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -81,90 +85,118 @@ internal fun WorkoutScreen(
         if (workout.completedSetCount > 0) showFinishValidation = false
     }
 
-    ScreenLayout(
-        title = stringResource(R.string.workout_title),
-        onBack = onBack,
-        actions = {
-            Text(
-                text = pluralStringResource(
-                    R.plurals.workout_exercise_count,
-                    workout.exercises.size,
-                    workout.exercises.size,
-                ),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        },
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium),
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXSmall)) {
+    Box(Modifier.fillMaxSize()) {
+        ScreenLayout(
+            title = stringResource(R.string.workout_title),
+            onBack = onBack,
+            actions = {
                 Text(
-                    text = stringResource(R.string.elapsed_time),
+                    text = pluralStringResource(
+                        R.plurals.workout_exercise_count,
+                        workout.exercises.size,
+                        workout.exercises.size,
+                    ),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Text(
-                    text = formatElapsedTime(workout.duration(now).seconds.coerceAtLeast(0)),
-                    style = MaterialTheme.typography.displaySmall,
-                )
-            }
-
-            if (workout.exercises.isEmpty()) {
-                EmptyWorkoutCard()
-            } else {
-                workout.exercises.forEach { exercise ->
-                    WorkoutExerciseCard(
-                        exercise = exercise,
-                        lastPerformance = lastPerformance[exercise.exercise.id],
-                        onSetChanged = onSetChanged,
+            },
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium),
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(Dimens.spacingXSmall)) {
+                    Text(
+                        text = stringResource(R.string.elapsed_time),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = formatElapsedTime(workout.duration(now).seconds.coerceAtLeast(0)),
+                        style = MaterialTheme.typography.displaySmall,
                     )
                 }
-            }
 
-            SecondaryButton(R.string.add_exercise, onAddExercise)
-
-            if (showFinishValidation) {
-                Text(
-                    text = stringResource(R.string.workout_finish_requires_completed_set),
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-            PrimaryButton(R.string.finish_workout, onClick = {
-                if (workout.completedSetCount == 0) {
-                    showFinishValidation = true
+                if (workout.exercises.isEmpty()) {
+                    EmptyWorkoutCard()
                 } else {
-                    onFinishWorkout()
+                    workout.exercises.forEach { exercise ->
+                        WorkoutExerciseCard(
+                            exercise = exercise,
+                            lastPerformance = lastPerformance[exercise.exercise.id],
+                            onSetChanged = onSetChanged,
+                        )
+                    }
                 }
-            })
-            SecondaryButton(R.string.discard_workout, onClick = { showDiscardDialog = true })
-        }
-    }
 
-    if (showDiscardDialog) {
-        AlertDialog(
-            onDismissRequest = { showDiscardDialog = false },
-            title = { Text(stringResource(R.string.discard_workout_title)) },
-            text = { Text(stringResource(R.string.discard_workout_message)) },
-            confirmButton = {
-                TextButton(onClick = {
-                    showDiscardDialog = false
-                    onDiscardWorkout()
-                }) {
-                    Text(stringResource(R.string.confirm_discard))
+                SecondaryButton(R.string.add_exercise, onAddExercise)
+
+                if (showFinishValidation) {
+                    Text(
+                        text = stringResource(R.string.workout_finish_requires_completed_set),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDiscardDialog = false }) {
-                    Text(stringResource(R.string.cancel))
+                PrimaryButton(R.string.finish_workout, onClick = {
+                    if (workout.completedSetCount == 0) {
+                        showFinishValidation = true
+                    } else {
+                        onFinishWorkout()
+                    }
+                })
+                SecondaryButton(R.string.discard_workout, onClick = { showDiscardDialog = true })
+            }
+        }
+
+        if (showDiscardDialog) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f))
+                    .clickable(onClick = {}),
+                contentAlignment = Alignment.Center,
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .widthIn(min = 280.dp, max = 400.dp)
+                        .padding(Dimens.spacingLarge),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surface,
+                    shadowElevation = 6.dp,
+                ) {
+                    Column(
+                        modifier = Modifier.padding(Dimens.spacingLarge),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.discard_workout_title),
+                            style = MaterialTheme.typography.headlineSmall,
+                        )
+                        Text(
+                            text = stringResource(R.string.discard_workout_message),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            TextButton(onClick = { showDiscardDialog = false }) {
+                                Text(stringResource(R.string.cancel))
+                            }
+                            TextButton(onClick = {
+                                showDiscardDialog = false
+                                onDiscardWorkout()
+                            }) {
+                                Text(stringResource(R.string.confirm_discard))
+                            }
+                        }
+                    }
                 }
-            },
-        )
+            }
+        }
     }
 }
 
@@ -377,18 +409,6 @@ private fun CompactNumberField(
     }
 }
 
-/** Keeps the existing navigation call compiling until the repository-backed state is wired in. */
-@Composable
-internal fun WorkoutScreen(planId: Long?, onBack: () -> Unit) {
-    ScreenLayout(title = stringResource(R.string.workout_title), onBack = onBack) {
-        if (planId == null) {
-            Text(stringResource(R.string.empty_workout_title))
-        } else {
-            Text(stringResource(R.string.selected_plan_id, planId))
-        }
-    }
-}
-
 @Preview(name = "Empty workout", showBackground = true)
 @Composable
 private fun WorkoutScreenEmptyPreview() {
@@ -456,7 +476,6 @@ private fun previewLastPerformance() = mapOf(
     1L to ExercisePerformance(
         exerciseId = 1,
         performedAt = Instant.now().minus(Duration.ofDays(7)),
-        targetReps = null,
         sets = listOf(
             WorkoutSet(reps = 8, weightKg = 80.0),
             WorkoutSet(reps = 8, weightKg = 80.0),
@@ -466,7 +485,6 @@ private fun previewLastPerformance() = mapOf(
     2L to ExercisePerformance(
         exerciseId = 2,
         performedAt = Instant.now().minus(Duration.ofDays(3)),
-        targetReps = null,
         sets = listOf(
             WorkoutSet(reps = 8, weightKg = 0.0),
             WorkoutSet(reps = 7, weightKg = 0.0),

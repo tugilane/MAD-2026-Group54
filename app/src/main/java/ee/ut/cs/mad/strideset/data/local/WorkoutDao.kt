@@ -18,6 +18,9 @@ interface WorkoutDao {
     @Query("SELECT id FROM workouts WHERE finishedAt IS NULL LIMIT 1")
     suspend fun getActiveId(): Long?
 
+    @Query("SELECT COUNT(*) FROM workout_exercises WHERE workoutId = :workoutId")
+    suspend fun countExercises(workoutId: Long): Int
+
     @Transaction
     @Query("SELECT * FROM workouts WHERE id = :id")
     fun observeById(id: Long): Flow<WorkoutWithExercises?>
@@ -106,8 +109,19 @@ interface WorkoutDao {
      * @throws IllegalStateException if another workout is already in progress (nothing is saved)
      */
     @Transaction
-    suspend fun startWorkout(workout: WorkoutEntity, exercises: List<StartingExercise>): Long {
-        check(getActiveId() == null) { "Another workout is already in progress" }
+    suspend fun startWorkout(
+        workout: WorkoutEntity,
+        exercises: List<StartingExercise>,
+        replaceEmptyWorkoutId: Long? = null,
+    ): Long {
+        if (replaceEmptyWorkoutId == null) {
+            check(getActiveId() == null) { "Another workout is already in progress" }
+        } else {
+            check(getActiveId() == replaceEmptyWorkoutId && countExercises(replaceEmptyWorkoutId) == 0) {
+                "The active workout is no longer empty"
+            }
+            deleteWorkout(replaceEmptyWorkoutId)
+        }
         val workoutId = insertWorkout(workout)
         exercises.forEachIndexed { position, item ->
             val workoutExerciseId = insertExercise(
