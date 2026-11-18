@@ -46,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ee.ut.cs.mad.strideset.R
 import ee.ut.cs.mad.strideset.data.model.Exercise
+import ee.ut.cs.mad.strideset.data.model.ExerciseType
 import ee.ut.cs.mad.strideset.data.model.PlanSet
 import ee.ut.cs.mad.strideset.data.model.PlanExercise
 import ee.ut.cs.mad.strideset.data.model.WeightUnit
@@ -80,9 +81,12 @@ internal fun PlanEditorScreen(
     var name by rememberSaveable(plan?.id) { mutableStateOf(plan?.name.orEmpty()) }
     // Each occurrence has its own key, even when the exercise is selected twice.
     var entries by rememberSaveable(plan?.id) {
-        mutableStateOf(ArrayList(plan?.exercises.orEmpty().mapIndexed { index, item ->
+        mutableStateOf(ArrayList(plan?.exercises.orEmpty().map { item ->
             PlanExerciseEntry(
-                exerciseId = item.exercise.id, savedPosition = index,
+                exerciseId = item.exercise.id,
+                exerciseName = item.exercise.name,
+                exerciseType = item.exercise.type,
+                isCustom = item.exercise.isCustom,
                 sets = ArrayList(item.sets.map { set ->
                     DraftSet(set.reps.toString(), set.weightKg?.let { weightUnit.toLb(it).toString() }.orEmpty())
                 }),
@@ -98,11 +102,13 @@ internal fun PlanEditorScreen(
     var saveError by remember { mutableStateOf<Int?>(null) }
     val scope = rememberCoroutineScope()
 
-    // Resolve the row's current name while its sets stay in the editor draft.
-    fun exerciseFor(entry: PlanExerciseEntry): Exercise = entry.customName?.let {
-        Exercise(name = it, type = ee.ut.cs.mad.strideset.data.model.ExerciseType.OTHER, isCustom = true)
-    } ?: exercises.firstOrNull { it.id == entry.exerciseId }
-        ?: requireNotNull(entry.savedPosition?.let { plan?.exercises?.getOrNull(it)?.exercise })
+    // Keep enough exercise details in the draft to render while the library reloads.
+    fun exerciseFor(entry: PlanExerciseEntry) = Exercise(
+        id = entry.exerciseId,
+        name = entry.exerciseName,
+        type = entry.exerciseType,
+        isCustom = entry.isCustom,
+    )
     // Remember how far down the form the user has scrolled.
     val scrollState = rememberScrollState()
     // Store each card's visible position so we know which card the finger is over.
@@ -156,17 +162,22 @@ internal fun PlanEditorScreen(
             exercises = exercises,
             onDismiss = { showPicker = false },
             onSelect = { exercise ->
-                // New custom exercises have no database ID yet, so keep their typed name.
-                val customName = exercise.name.takeIf { exercise.id == 0L }
                 // Adding makes a new row. Replacing keeps the existing row's sets.
                 entries = ArrayList(
                     if (replacingEntryKey == null) {
-                        entries + PlanExerciseEntry(exerciseId = exercise.id, customName = customName)
+                        entries + PlanExerciseEntry(
+                            exerciseId = exercise.id,
+                            exerciseName = exercise.name,
+                            exerciseType = exercise.type,
+                            isCustom = exercise.isCustom,
+                        )
                     } else {
                         entries.map { entry ->
                             if (entry.key == replacingEntryKey) entry.copy(
                                 exerciseId = exercise.id,
-                                customName = customName,
+                                exerciseName = exercise.name,
+                                exerciseType = exercise.type,
+                                isCustom = exercise.isCustom,
                             ) else entry
                         }
                     }
@@ -343,14 +354,13 @@ internal fun PlanEditorScreen(
     }
 }
 
-// Save the original position so repeated saved exercises keep their own sets.
+// Save the row's exercise details as well as its sets so library loading cannot lose edits.
 private data class PlanExerciseEntry(
     // The exercise library's ID. Draft custom exercises use zero.
     val exerciseId: Long,
-    // Keep a custom name here until saving gives that exercise a database ID.
-    val customName: String? = null,
-    // Remember where to find this row's original sets in the saved plan.
-    val savedPosition: Int? = null,
+    val exerciseName: String,
+    val exerciseType: ExerciseType,
+    val isCustom: Boolean,
     // All popup edits live here, ready for Save. New rows start with one set.
     val sets: ArrayList<DraftSet> = arrayListOf(DraftSet("8", "")),
     // A separate row identifier allows the same exercise to appear more than once.

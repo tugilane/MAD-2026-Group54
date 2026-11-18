@@ -19,7 +19,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.toMutableStateList
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -44,8 +46,13 @@ internal fun PlanExercisePopup(
     onDismiss: () -> Unit,
     onDone: (List<DraftSet>) -> Unit,
 ) {
-    // Copy the editor draft so Cancel and Android Back can discard popup edits.
-    val sets = remember { initialSets.toMutableStateList() }
+    // Keep open edits through rotation, separate from the editor until Done is pressed.
+    val sets = rememberSaveable(
+        saver = listSaver<SnapshotStateList<DraftSet>, DraftSet>(
+            save = { it.toList() },
+            restore = { it.toMutableStateList() },
+        ),
+    ) { initialSets.toMutableStateList() }
 
     val listState = rememberLazyListState()
     val repsLabel = stringResource(R.string.target_reps)
