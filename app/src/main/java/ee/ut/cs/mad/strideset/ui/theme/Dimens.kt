@@ -17,4 +17,6 @@ object Dimens {
     val bottomBarIconSize = 22.dp
     val backButtonSize = 32.dp
     val smallIconSize = 16.dp
+    val calendarDayCircleSize = 30.dp
+    val activityDotSize = 7.dp
 }
