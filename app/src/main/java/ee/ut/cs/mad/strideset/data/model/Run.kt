@@ -11,6 +11,7 @@ data class Run(
     /** Time spent running, excluding pauses. */
     val activeDuration: Duration = Duration.ZERO,
     val distanceMeters: Double = 0.0,
+    val isPaused: Boolean = false,
 ) {
     val isFinished: Boolean get() = finishedAt != null
 

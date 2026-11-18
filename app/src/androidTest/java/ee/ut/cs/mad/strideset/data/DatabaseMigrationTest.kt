@@ -16,6 +16,55 @@ import org.junit.runner.RunWith
 class DatabaseMigrationTest {
     private val dbName = "migration-test.db"
 
+    @Test
+    fun migrate4To5KeepsPlansWorkoutsAndAddsRuns() {
+        helper.createDatabase(dbName, 4).use { db ->
+            db.execSQL("INSERT INTO exercises (id, name, type, isCustom) VALUES (1, 'Squat', 'BARBELL', 0)")
+            db.execSQL("INSERT INTO workout_plans (id, name) VALUES (1, 'Legs')")
+            db.execSQL("INSERT INTO plan_exercises (planId, position, exerciseId) VALUES (1, 0, 1)")
+            db.execSQL("INSERT INTO plan_sets (planId, exercisePosition, setIndex, reps, weightKg) VALUES (1, 0, 0, 8, 60.0)")
+            db.execSQL("INSERT INTO workouts (id, name, planId, startedAt, finishedAt) VALUES (1, 'Legs', 1, 1000, 2000)")
+            db.execSQL("INSERT INTO workout_exercises (id, workoutId, position, exerciseId) VALUES (1, 1, 0, 1)")
+            db.execSQL("INSERT INTO workout_sets (id, workoutExerciseId, position, reps, weightKg, isCompleted) VALUES (1, 1, 0, 8, 60.0, 1)")
+        }
+
+        // Upgrade the existing database, then check the data as well as the new table.
+        helper.runMigrationsAndValidate(dbName, 5, true).use { db ->
+            db.query("SELECT p.name, e.name, s.reps, s.weightKg FROM workout_plans p " +
+                "JOIN plan_exercises pe ON pe.planId = p.id " +
+                "JOIN exercises e ON e.id = pe.exerciseId " +
+                "JOIN plan_sets s ON s.planId = pe.planId AND s.exercisePosition = pe.position").use {
+                assertTrue(it.moveToFirst())
+                assertEquals("Legs", it.getString(0))
+                assertEquals("Squat", it.getString(1))
+                assertEquals(8, it.getInt(2))
+                assertEquals(60.0, it.getDouble(3), 0.0)
+            }
+            db.query("SELECT w.planId, w.startedAt, w.finishedAt, s.reps, s.weightKg, s.isCompleted " +
+                "FROM workouts w JOIN workout_exercises e ON e.workoutId = w.id " +
+                "JOIN workout_sets s ON s.workoutExerciseId = e.id").use {
+                assertTrue(it.moveToFirst())
+                assertEquals(1L, it.getLong(0))
+                assertEquals(1000L, it.getLong(1))
+                assertEquals(2000L, it.getLong(2))
+                assertEquals(8, it.getInt(3))
+                assertEquals(60.0, it.getDouble(4), 0.0)
+                assertEquals(1, it.getInt(5))
+            }
+            db.query("SELECT COUNT(*) FROM runs").use {
+                it.moveToFirst()
+                assertEquals(0, it.getInt(0))
+            }
+            // The added table also accepts a run with the expected columns.
+            db.execSQL("INSERT INTO runs (startedAtMillis, activeDurationSeconds, distanceMeters, isPaused) " +
+                "VALUES (3000, 60, 150.0, 0)")
+            db.query("SELECT distanceMeters FROM runs").use {
+                assertTrue(it.moveToFirst())
+                assertEquals(150.0, it.getDouble(0), 0.0)
+            }
+        }
+    }
+
     @get:Rule
     val helper = MigrationTestHelper(
         InstrumentationRegistry.getInstrumentation(),

@@ -16,18 +16,21 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         WorkoutEntity::class,
         WorkoutExerciseEntity::class,
         WorkoutSetEntity::class,
+        RunEntity::class,
     ],
-    version = 4,
+    version = 5,
     autoMigrations = [
         AutoMigration(from = 1, to = 2), // adds workout_plans and plan_exercises
         // 2 -> 3 is MIGRATION_2_3 (manual, in Migrations.kt)
         AutoMigration(from = 3, to = 4), // adds workouts, workout_exercises and workout_sets
+        AutoMigration(from = 4, to = 5), // adds runs while preserving plans and workouts
     ],
 )
 abstract class StrideSetDatabase : RoomDatabase() {
     abstract fun exerciseDao(): ExerciseDao
     abstract fun workoutPlanDao(): WorkoutPlanDao
     abstract fun workoutDao(): WorkoutDao
+    abstract fun runDao(): RunDao
 
     companion object {
         fun create(context: Context): StrideSetDatabase =
