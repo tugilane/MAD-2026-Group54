@@ -45,4 +45,9 @@
         <item>S</item>
         <item>S</item>
     </string-array>
+    <string name="calendar_no_activities">No activities on this day</string>
+    <plurals name="calendar_activity_count">
+        <item quantity="one">%d activity</item>
+        <item quantity="other">%d activities</item>
+    </plurals>
 </resources>

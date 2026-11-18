@@ -19,4 +19,5 @@ object Dimens {
     val smallIconSize = 16.dp
     val calendarDayCircleSize = 30.dp
     val activityDotSize = 7.dp
+    val activityIconTileSize = 38.dp
 }
