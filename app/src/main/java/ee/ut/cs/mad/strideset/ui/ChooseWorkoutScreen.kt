@@ -8,15 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -37,14 +34,9 @@ internal fun ChooseWorkoutScreen(
 ) {
     val colors = MaterialTheme.colorScheme
     val shape = MaterialTheme.shapes.medium
-    // ScreenLayout supplies the shared title and spacing. Its actions slot sits to the right.
     ScreenLayout(
         title = stringResource(R.string.choose_workout_title),
-        actions = {
-            IconButton(onClick = onBack) {
-                Icon(painterResource(R.drawable.ic_back), stringResource(R.string.navigate_back))
-            }
-        },
+        onBack = onBack,
     ) {
         // Stack the cards vertically and allow scrolling on shorter screens.
         Column(

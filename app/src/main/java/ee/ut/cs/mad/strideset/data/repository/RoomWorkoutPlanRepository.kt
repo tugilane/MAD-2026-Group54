@@ -1,6 +1,7 @@
 package ee.ut.cs.mad.strideset.data.repository
 
 import ee.ut.cs.mad.strideset.data.local.PlanExerciseEntity
+import ee.ut.cs.mad.strideset.data.local.ExerciseEntity
 import ee.ut.cs.mad.strideset.data.local.PlanSetEntity
 import ee.ut.cs.mad.strideset.data.local.WorkoutPlanDao
 import ee.ut.cs.mad.strideset.data.local.WorkoutPlanEntity
@@ -41,7 +42,12 @@ class RoomWorkoutPlanRepository(private val dao: WorkoutPlanDao) : WorkoutPlanRe
                 )
             }
         }
-        return dao.savePlan(WorkoutPlanEntity(id = plan.id, name = name), items, sets)
+        val customExercises = plan.exercises.mapIndexedNotNull { position, item ->
+            item.exercise.takeIf { it.id == 0L }?.let {
+                position to ExerciseEntity(name = it.name.trim(), type = it.type, isCustom = true)
+            }
+        }.toMap()
+        return dao.savePlan(WorkoutPlanEntity(id = plan.id, name = name), items, sets, customExercises)
     }
 
     override suspend fun deletePlan(id: Long) = dao.deletePlan(id)

@@ -22,6 +22,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val settingsRepository = (application as StrideSetApplication).container.settingsRepository
         val savedPlans = (application as StrideSetApplication).container.workoutPlanRepository.observePlans()
+        val exercises = (application as StrideSetApplication).container.exerciseRepository.observeExercises()
         val settingsFlow = settingsRepository.settings.catch { error ->
             if (error is IOException) {
                 Toast.makeText(this@MainActivity, R.string.settings_load_error, Toast.LENGTH_LONG).show()
@@ -39,6 +40,10 @@ class MainActivity : ComponentActivity() {
                 StrideSetApp(
                     settings = settings,
                     savedPlans = savedPlans,
+                    availableExercises = exercises,
+                    onSavePlan = { plan ->
+                        (application as StrideSetApplication).container.workoutPlanRepository.savePlan(plan)
+                    },
                     onDistanceUnitSelected = { unit ->
                         saveSetting { settingsRepository.setDistanceUnit(unit) }
                     },
