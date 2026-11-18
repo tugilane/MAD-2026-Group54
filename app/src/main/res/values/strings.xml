@@ -76,8 +76,50 @@
     <string name="empty_workout_title">Empty workout</string>
     <string name="selected_plan_id">Selected plan ID: %1$d</string>
     <string name="edit_plan">Edit</string>
+    <string name="save_plan">Save</string>
+    <string name="plan_name">PLAN NAME</string>
+    <string name="plan_name_hint">e.g. Lower body</string>
+    <string name="plan_exercises">EXERCISES</string>
+    <string name="plan_exercise_targets">%1$d sets × %2$d reps</string>
+    <string name="remove_plan_exercise">Remove</string>
+    <string name="click_for_details">Click for details</string>
+    <string name="set_number">Set %1$d</string>
+    <string name="target_weight">Weight</string>
+    <string name="kilogram_symbol">kg</string>
+    <string name="pound_symbol">lb</string>
+    <string name="scroll_to_view_sets">Scroll to view all sets</string>
+    <string name="add_set">+ Add set</string>
+    <string name="target_reps">Reps</string>
+    <string name="cancel">Cancel</string>
+    <string name="done">Done</string>
+    <string name="plan_loading">Loading plan…</string>
+    <string name="plan_unavailable">This plan is no longer available.</string>
     <plurals name="plan_exercise_count">
         <item quantity="one">%d exercise</item>
         <item quantity="other">%d exercises</item>
+    </plurals>
+    <string name="choose_exercise">Choose exercise</string>
+    <string name="custom_exercise">Custom exercise</string>
+    <string name="search_exercises">Existing exercises</string>
+    <string name="apply_exercise">Apply</string>
+    <string name="exercise_name_taken">An exercise with this name already exists.</string>
+    <string name="reorder_exercises">Reorder</string>
+    <string name="plan_save_error">Could not save the plan. Please try again.</string>
+    <string name="plan_save_input_error">Could not save these plan details. Check the name, exercises, reps and weights.</string>
+    <string name="calendar_previous_month">Previous month</string>
+    <string name="calendar_next_month">Next month</string>
+    <string-array name="calendar_weekday_letters">
+        <item>M</item>
+        <item>T</item>
+        <item>W</item>
+        <item>T</item>
+        <item>F</item>
+        <item>S</item>
+        <item>S</item>
+    </string-array>
+    <string name="calendar_no_activities">No activities on this day</string>
+    <plurals name="calendar_activity_count">
+        <item quantity="one">%d activity</item>
+        <item quantity="other">%d activities</item>
     </plurals>
 </resources>

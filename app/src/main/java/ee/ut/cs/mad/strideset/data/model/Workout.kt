@@ -25,10 +25,7 @@ data class Workout(
 data class WorkoutExercise(
     val id: Long = 0,
     val exercise: Exercise,
-    /** Copied from the plan when started from one; null in an empty workout. */
-    val targetSets: Int? = null,
-    val targetReps: Int? = null,
-    /** In order: the first item is SET 1. */
+    /** In order: the first item is SET 1. Started from a plan, these begin as copies of the plan's sets. */
     val sets: List<WorkoutSet> = emptyList(),
 )
 
@@ -44,6 +41,6 @@ data class WorkoutSet(
 data class ExercisePerformance(
     val exerciseId: Long,
     val performedAt: Instant,
-    val targetReps: Int?,
+    /** Only the sets that were completed. */
     val sets: List<WorkoutSet>,
 )

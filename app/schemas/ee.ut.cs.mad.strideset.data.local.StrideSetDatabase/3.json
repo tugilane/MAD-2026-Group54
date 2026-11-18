@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "13dcdc204ca1fc1baa9a74c76fc1e451",
+    "identityHash": "ad15bcad96ed4e693399a5750451139d",
     "entities": [
       {
         "tableName": "exercises",
@@ -77,7 +77,7 @@
       },
       {
         "tableName": "plan_exercises",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`planId` INTEGER NOT NULL, `position` INTEGER NOT NULL, `exerciseId` INTEGER NOT NULL, `targetSets` INTEGER NOT NULL, `targetReps` INTEGER NOT NULL, PRIMARY KEY(`planId`, `position`), FOREIGN KEY(`planId`) REFERENCES `workout_plans`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`exerciseId`) REFERENCES `exercises`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`planId` INTEGER NOT NULL, `position` INTEGER NOT NULL, `exerciseId` INTEGER NOT NULL, PRIMARY KEY(`planId`, `position`), FOREIGN KEY(`planId`) REFERENCES `workout_plans`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`exerciseId`) REFERENCES `exercises`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
         "fields": [
           {
             "fieldPath": "planId",
@@ -94,18 +94,6 @@
           {
             "fieldPath": "exerciseId",
             "columnName": "exerciseId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "targetSets",
-            "columnName": "targetSets",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "targetReps",
-            "columnName": "targetReps",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -154,56 +142,67 @@
         ]
       },
       {
-        "tableName": "runs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `startedAtMillis` INTEGER NOT NULL, `finishedAtMillis` INTEGER, `activeDurationSeconds` INTEGER NOT NULL, `distanceMeters` REAL NOT NULL, `isPaused` INTEGER NOT NULL)",
+        "tableName": "plan_sets",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`planId` INTEGER NOT NULL, `exercisePosition` INTEGER NOT NULL, `setIndex` INTEGER NOT NULL, `reps` INTEGER NOT NULL, `weightKg` REAL, PRIMARY KEY(`planId`, `exercisePosition`, `setIndex`), FOREIGN KEY(`planId`, `exercisePosition`) REFERENCES `plan_exercises`(`planId`, `position`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
-            "fieldPath": "id",
-            "columnName": "id",
+            "fieldPath": "planId",
+            "columnName": "planId",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "startedAtMillis",
-            "columnName": "startedAtMillis",
+            "fieldPath": "exercisePosition",
+            "columnName": "exercisePosition",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "finishedAtMillis",
-            "columnName": "finishedAtMillis",
-            "affinity": "INTEGER"
-          },
-          {
-            "fieldPath": "activeDurationSeconds",
-            "columnName": "activeDurationSeconds",
+            "fieldPath": "setIndex",
+            "columnName": "setIndex",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "distanceMeters",
-            "columnName": "distanceMeters",
-            "affinity": "REAL",
+            "fieldPath": "reps",
+            "columnName": "reps",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "isPaused",
-            "columnName": "isPaused",
-            "affinity": "INTEGER",
-            "notNull": true
+            "fieldPath": "weightKg",
+            "columnName": "weightKg",
+            "affinity": "REAL"
           }
         ],
         "primaryKey": {
-          "autoGenerate": true,
+          "autoGenerate": false,
           "columnNames": [
-            "id"
+            "planId",
+            "exercisePosition",
+            "setIndex"
           ]
-        }
+        },
+        "foreignKeys": [
+          {
+            "table": "plan_exercises",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "planId",
+              "exercisePosition"
+            ],
+            "referencedColumns": [
+              "planId",
+              "position"
+            ]
+          }
+        ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '13dcdc204ca1fc1baa9a74c76fc1e451')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ad15bcad96ed4e693399a5750451139d')"
     ]
   }
 }
