@@ -47,6 +47,15 @@
     <string name="last_performance_label">Last: %1$s</string>
     <string name="last_performance_weighted">%1$d × %2$s kg</string>
     <string name="last_performance_bodyweight">%1$d reps</string>
+    <string name="workout_complete_title">Workout complete</string>
+    <string name="workout_time_label">Time</string>
+    <string name="workout_exercises_label">Exercises</string>
+    <string name="workout_sets_label">Sets</string>
+    <string name="completed_exercises_title">Completed exercises</string>
+    <string name="completed_set_weighted">%1$d × %2$s kg</string>
+    <string name="completed_set_bodyweight">%1$d reps</string>
+    <string name="view_calendar">View calendar</string>
+    <string name="done">Done</string>
     <string name="exercise_type_barbell">Barbell</string>
     <string name="exercise_type_dumbbell">Dumbbell</string>
     <string name="exercise_type_machine">Machine</string>
@@ -58,6 +67,10 @@
     <plurals name="workout_exercise_count">
         <item quantity="one">%d exercise</item>
         <item quantity="other">%d exercises</item>
+    </plurals>
+    <plurals name="completed_set_count">
+        <item quantity="one">%d set</item>
+        <item quantity="other">%d sets</item>
     </plurals>
     <plurals name="plan_exercise_count">
         <item quantity="one">%d exercise</item>
