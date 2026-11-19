@@ -138,6 +138,8 @@ class MainActivity : ComponentActivity() {
                             null
                         }
                     },
+                    finishedWorkouts = { start, end -> workoutRepository.observeFinishedWorkouts(start, end) },
+                    finishedRuns = { start, end -> container.runRepository.observeFinishedRuns(start, end) },
                     openRunRequest = openRunRequest,
                     runContent = { back ->
                         RunRoute(

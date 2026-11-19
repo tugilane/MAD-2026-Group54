@@ -156,6 +156,8 @@
         <item>S</item>
     </string-array>
     <string name="calendar_no_activities">No activities on this day</string>
+    <string name="calendar_workout_detail">%1$d min · %2$s</string>
+    <string name="calendar_run_detail">%1$s %2$s · %3$s</string>
     <plurals name="workout_exercise_count">
         <item quantity="one">%d exercise</item>
         <item quantity="other">%d exercises</item>
