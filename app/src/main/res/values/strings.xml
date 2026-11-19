@@ -73,7 +73,51 @@
     <string name="new_plan_title">New plan</string>
     <string name="edit_plan_title">Edit plan</string>
     <string name="workout_title">Workout</string>
+    <string name="workout_start_error">Could not start the workout. Please try again.</string>
+    <string name="workout_discard_error">Could not discard the workout. Please try again.</string>
+    <string name="workout_update_error">Could not update the workout. Please try again.</string>
+    <string name="workout_add_exercise_error">Could not add this exercise. Please try again.</string>
+    <string name="workout_finish_error">Could not finish the workout. Please try again.</string>
+    <string name="workout_leave_title">Leave this workout?</string>
+    <string name="workout_leave_message">Finish and save, discard this workout, or continue training.</string>
+    <string name="continue_workout">Continue workout</string>
+    <string name="finish_and_save">Finish and save</string>
+    <string name="workout_background">Keep workout running in background</string>
     <string name="empty_workout_title">Empty workout</string>
+    <string name="empty_workout_message">Add your first exercise when you are ready.</string>
+    <string name="elapsed_time">Elapsed time</string>
+    <string name="finish_workout">Finish workout</string>
+    <string name="discard_workout">Discard</string>
+    <string name="discard_workout_title">Discard workout?</string>
+    <string name="discard_workout_message">This workout and its sets will be deleted.</string>
+    <string name="confirm_discard">Discard</string>
+    <string name="cancel">Cancel</string>
+    <string name="workout_finish_requires_completed_set">Complete at least one set before finishing.</string>
+    <string name="workout_set_label">SET %1$d</string>
+    <string name="set_reps_description">Repetitions for set %1$d</string>
+    <string name="set_weight_description">Weight for set %1$d</string>
+    <string name="mark_set_complete">Mark set %1$d complete</string>
+    <string name="mark_set_incomplete">Mark set %1$d incomplete</string>
+    <string name="reps_unit">reps</string>
+    <string name="weight_kilograms_abbreviation">kg</string>
+    <string name="last_performance_label">Last: %1$s</string>
+    <string name="last_performance_weighted">%1$d × %2$s kg</string>
+    <string name="last_performance_bodyweight">%1$d reps</string>
+    <string name="workout_complete_title">Workout complete</string>
+    <string name="workout_time_label">Time</string>
+    <string name="workout_exercises_label">Exercises</string>
+    <string name="workout_sets_label">Sets</string>
+    <string name="completed_exercises_title">Completed exercises</string>
+    <string name="completed_set_weighted">%1$d × %2$s kg</string>
+    <string name="completed_set_bodyweight">%1$d reps</string>
+    <string name="view_calendar">View calendar</string>
+    <string name="done">Done</string>
+    <string name="exercise_type_barbell">Barbell</string>
+    <string name="exercise_type_dumbbell">Dumbbell</string>
+    <string name="exercise_type_machine">Machine</string>
+    <string name="exercise_type_cable">Cable</string>
+    <string name="exercise_type_bodyweight">Bodyweight</string>
+    <string name="exercise_type_other">Other</string>
     <string name="selected_plan_id">Selected plan ID: %1$d</string>
     <string name="edit_plan">Edit</string>
     <string name="save_plan">Save</string>
@@ -90,14 +134,8 @@
     <string name="scroll_to_view_sets">Scroll to view all sets</string>
     <string name="add_set">+ Add set</string>
     <string name="target_reps">Reps</string>
-    <string name="cancel">Cancel</string>
-    <string name="done">Done</string>
     <string name="plan_loading">Loading plan…</string>
     <string name="plan_unavailable">This plan is no longer available.</string>
-    <plurals name="plan_exercise_count">
-        <item quantity="one">%d exercise</item>
-        <item quantity="other">%d exercises</item>
-    </plurals>
     <string name="choose_exercise">Choose exercise</string>
     <string name="custom_exercise">Custom exercise</string>
     <string name="search_exercises">Existing exercises</string>
@@ -118,6 +156,18 @@
         <item>S</item>
     </string-array>
     <string name="calendar_no_activities">No activities on this day</string>
+    <plurals name="workout_exercise_count">
+        <item quantity="one">%d exercise</item>
+        <item quantity="other">%d exercises</item>
+    </plurals>
+    <plurals name="completed_set_count">
+        <item quantity="one">%d set</item>
+        <item quantity="other">%d sets</item>
+    </plurals>
+    <plurals name="plan_exercise_count">
+        <item quantity="one">%d exercise</item>
+        <item quantity="other">%d exercises</item>
+    </plurals>
     <plurals name="calendar_activity_count">
         <item quantity="one">%d activity</item>
         <item quantity="other">%d activities</item>
