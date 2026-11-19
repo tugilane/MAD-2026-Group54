@@ -20,6 +20,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.material3.Text
 import androidx.compose.ui.tooling.preview.Preview
@@ -31,7 +32,10 @@ import ee.ut.cs.mad.strideset.data.model.WeightUnit
 import ee.ut.cs.mad.strideset.data.model.Workout
 import ee.ut.cs.mad.strideset.data.model.WorkoutSet
 import ee.ut.cs.mad.strideset.data.model.WorkoutPlan
+import ee.ut.cs.mad.strideset.data.model.Run
 import ee.ut.cs.mad.strideset.ui.calendar.CalendarScreen
+import ee.ut.cs.mad.strideset.ui.calendar.calendarActivitiesFrom
+import ee.ut.cs.mad.strideset.ui.calendar.calendarGridDays
 import ee.ut.cs.mad.strideset.ui.components.ScreenLayout
 import ee.ut.cs.mad.strideset.ui.home.HomeBottomBar
 import ee.ut.cs.mad.strideset.ui.home.HomeScreen
@@ -40,6 +44,7 @@ import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.YearMonth
 
 private enum class AppDestination(
@@ -75,6 +80,8 @@ fun StrideSetApp(
     runContent: @Composable (() -> Unit) -> Unit = { back ->
         PlaceholderScreen(title = R.string.run_title, onBack = back)
     },
+    finishedWorkouts: (LocalDate, LocalDate) -> Flow<List<Workout>> = { _, _ -> emptyFlow() },
+    finishedRuns: (LocalDate, LocalDate) -> Flow<List<Run>> = { _, _ -> emptyFlow() },
 ) {
     var destination by rememberSaveable { mutableStateOf(AppDestination.Home) }
 
@@ -204,11 +211,26 @@ fun StrideSetApp(
                 }
             } else if (destination == AppDestination.Calendar) {
                 var calendarMonth by rememberSaveable { mutableStateOf(YearMonth.now()) }
+
+                val gridDays = calendarGridDays(calendarMonth)
+                val firstDay = gridDays[0]
+                val lastDay = gridDays[gridDays.size - 1]
+
+                val workoutsFlow = remember(calendarMonth) { finishedWorkouts(firstDay, lastDay) }
+                val runsFlow = remember(calendarMonth) { finishedRuns(firstDay, lastDay) }
+                val workouts by workoutsFlow.collectAsState(initial = emptyList())
+                val runs by runsFlow.collectAsState(initial = emptyList())
+
+                val activities = calendarActivitiesFrom(
+                    workouts = workouts,
+                    runs = runs,
+                    distanceUnit = settings.distanceUnit,
+                    resources = LocalContext.current.resources
+                )
                 CalendarScreen(
                     shownMonth = calendarMonth,
                     onMonthChange = { newMonth -> calendarMonth = newMonth },
-                    // Empty until finished workouts and runs are stored.
-                    activities = emptyList(),
+                    activities = activities,
                 )
             } else if (destination == AppDestination.Run) {
                 runContent(goBack)
