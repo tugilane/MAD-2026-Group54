@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.verticalScroll
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -42,6 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ee.ut.cs.mad.strideset.R
 import ee.ut.cs.mad.strideset.data.model.ExercisePerformance
+import ee.ut.cs.mad.strideset.data.model.Exercise
 import ee.ut.cs.mad.strideset.data.model.ExerciseType
 import ee.ut.cs.mad.strideset.data.model.Workout
 import ee.ut.cs.mad.strideset.data.model.WorkoutExercise
@@ -49,6 +52,7 @@ import ee.ut.cs.mad.strideset.data.model.WorkoutSet
 import ee.ut.cs.mad.strideset.ui.components.PrimaryButton
 import ee.ut.cs.mad.strideset.ui.components.ScreenLayout
 import ee.ut.cs.mad.strideset.ui.components.SecondaryButton
+import ee.ut.cs.mad.strideset.ui.components.ExercisePickerPopup
 import ee.ut.cs.mad.strideset.ui.theme.Dimens
 import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
 import kotlinx.coroutines.delay
@@ -63,8 +67,9 @@ import java.time.Instant
 @Composable
 internal fun WorkoutScreen(
     workout: Workout,
-    onBack: () -> Unit,
-    onAddExercise: () -> Unit,
+    exercises: List<Exercise> = emptyList(),
+    onAddExercise: (Exercise) -> Unit,
+    onAddSet: (Long) -> Unit,
     onSetChanged: (WorkoutSet) -> Unit,
     onFinishWorkout: () -> Unit,
     onDiscardWorkout: () -> Unit,
@@ -73,7 +78,11 @@ internal fun WorkoutScreen(
 ) {
     var now by remember(workout.id, workout.startedAt) { mutableStateOf(initialNow) }
     var showDiscardDialog by remember(workout.id) { mutableStateOf(false) }
+    var showBackDialog by remember(workout.id) { mutableStateOf(false) }
+    var showExercisePicker by remember(workout.id) { mutableStateOf(false) }
     var showFinishValidation by remember(workout.id) { mutableStateOf(false) }
+
+    BackHandler { showBackDialog = true }
 
     LaunchedEffect(workout.id, workout.startedAt, workout.finishedAt) {
         while (!workout.isFinished) {
@@ -88,7 +97,7 @@ internal fun WorkoutScreen(
     Box(Modifier.fillMaxSize()) {
         ScreenLayout(
             title = stringResource(R.string.workout_title),
-            onBack = onBack,
+            onBack = { showBackDialog = true },
             actions = {
                 Text(
                     text = pluralStringResource(
@@ -127,11 +136,12 @@ internal fun WorkoutScreen(
                             exercise = exercise,
                             lastPerformance = lastPerformance[exercise.exercise.id],
                             onSetChanged = onSetChanged,
+                            onAddSet = { onAddSet(exercise.id) },
                         )
                     }
                 }
 
-                SecondaryButton(R.string.add_exercise, onAddExercise)
+                SecondaryButton(R.string.add_exercise, onClick = { showExercisePicker = true })
 
                 if (showFinishValidation) {
                     Text(
@@ -152,50 +162,55 @@ internal fun WorkoutScreen(
         }
 
         if (showDiscardDialog) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f))
-                    .clickable(onClick = {}),
-                contentAlignment = Alignment.Center,
-            ) {
-                Surface(
-                    modifier = Modifier
-                        .widthIn(min = 280.dp, max = 400.dp)
-                        .padding(Dimens.spacingLarge),
-                    shape = MaterialTheme.shapes.extraLarge,
-                    color = MaterialTheme.colorScheme.surface,
-                    shadowElevation = 6.dp,
-                ) {
-                    Column(
-                        modifier = Modifier.padding(Dimens.spacingLarge),
-                        verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.discard_workout_title),
-                            style = MaterialTheme.typography.headlineSmall,
-                        )
-                        Text(
-                            text = stringResource(R.string.discard_workout_message),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End,
-                        ) {
-                            TextButton(onClick = { showDiscardDialog = false }) {
-                                Text(stringResource(R.string.cancel))
-                            }
-                            TextButton(onClick = {
-                                showDiscardDialog = false
-                                onDiscardWorkout()
-                            }) {
-                                Text(stringResource(R.string.confirm_discard))
-                            }
-                        }
-                    }
+            WorkoutModal {
+                Text(stringResource(R.string.discard_workout_title), style = MaterialTheme.typography.headlineSmall)
+                Text(stringResource(R.string.discard_workout_message), style = MaterialTheme.typography.bodyMedium)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = { showDiscardDialog = false }) { Text(stringResource(R.string.cancel)) }
+                    TextButton(onClick = {
+                        showDiscardDialog = false
+                        onDiscardWorkout()
+                    }) { Text(stringResource(R.string.confirm_discard)) }
                 }
             }
+        }
+
+        if (showBackDialog) {
+            WorkoutModal {
+                Text(stringResource(R.string.workout_leave_title), style = MaterialTheme.typography.headlineSmall)
+                Text(stringResource(R.string.workout_leave_message), style = MaterialTheme.typography.bodyMedium)
+                if (showFinishValidation) {
+                    Text(
+                        text = stringResource(R.string.workout_finish_requires_completed_set),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+                TextButton(onClick = {
+                    if (workout.completedSetCount == 0) {
+                        showFinishValidation = true
+                    } else {
+                        showBackDialog = false
+                        onFinishWorkout()
+                    }
+                }) { Text(stringResource(R.string.finish_and_save)) }
+                TextButton(onClick = {
+                    showBackDialog = false
+                    showDiscardDialog = true
+                }) { Text(stringResource(R.string.discard_workout)) }
+                TextButton(onClick = { showBackDialog = false }) { Text(stringResource(R.string.continue_workout)) }
+            }
+        }
+
+        if (showExercisePicker) {
+            ExercisePickerPopup(
+                exercises = exercises,
+                onSelect = { exercise ->
+                    showExercisePicker = false
+                    onAddExercise(exercise)
+                },
+                onDismiss = { showExercisePicker = false },
+            )
         }
     }
 }
@@ -229,10 +244,35 @@ private fun EmptyWorkoutCard() {
 }
 
 @Composable
+private fun WorkoutModal(content: @Composable ColumnScope.() -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.32f))
+            .clickable(onClick = {}),
+        contentAlignment = Alignment.Center,
+    ) {
+        Surface(
+            modifier = Modifier.widthIn(min = 280.dp, max = 400.dp).padding(Dimens.spacingLarge),
+            shape = MaterialTheme.shapes.extraLarge,
+            color = MaterialTheme.colorScheme.surface,
+            shadowElevation = 6.dp,
+        ) {
+            Column(
+                modifier = Modifier.padding(Dimens.spacingLarge),
+                verticalArrangement = Arrangement.spacedBy(Dimens.spacingMedium),
+                content = content,
+            )
+        }
+    }
+}
+
+@Composable
 private fun WorkoutExerciseCard(
     exercise: WorkoutExercise,
     lastPerformance: ExercisePerformance?,
     onSetChanged: (WorkoutSet) -> Unit,
+    onAddSet: () -> Unit,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -268,6 +308,7 @@ private fun WorkoutExerciseCard(
                     onSetChanged = onSetChanged,
                 )
             }
+            SecondaryButton(R.string.add_set, onAddSet)
         }
     }
 }
@@ -415,8 +456,8 @@ private fun WorkoutScreenEmptyPreview() {
     StrideSetTheme {
         WorkoutScreen(
             workout = Workout(name = "Workout", startedAt = Instant.now()),
-            onBack = {},
             onAddExercise = {},
+            onAddSet = {},
             onSetChanged = {},
             onFinishWorkout = {},
             onDiscardWorkout = {},
@@ -430,8 +471,8 @@ private fun WorkoutScreenPopulatedPreview() {
     StrideSetTheme {
         WorkoutScreen(
             workout = previewWorkout(),
-            onBack = {},
             onAddExercise = {},
+            onAddSet = {},
             onSetChanged = {},
             onFinishWorkout = {},
             onDiscardWorkout = {},

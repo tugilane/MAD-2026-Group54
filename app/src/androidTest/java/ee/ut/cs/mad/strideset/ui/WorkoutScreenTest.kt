@@ -1,8 +1,10 @@
 package ee.ut.cs.mad.strideset.ui
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import ee.ut.cs.mad.strideset.data.model.Exercise
@@ -31,8 +33,8 @@ class WorkoutScreenTest {
             StrideSetTheme {
                 WorkoutScreen(
                     workout = workout,
-                    onBack = {},
                     onAddExercise = {},
+                    onAddSet = {},
                     onSetChanged = {},
                     onFinishWorkout = { finished = true },
                     onDiscardWorkout = {},
@@ -57,8 +59,8 @@ class WorkoutScreenTest {
             StrideSetTheme {
                 WorkoutScreen(
                     workout = workoutWithExercise(),
-                    onBack = {},
                     onAddExercise = {},
+                    onAddSet = {},
                     onSetChanged = { changedSet = it },
                     onFinishWorkout = {},
                     onDiscardWorkout = {},
@@ -78,15 +80,16 @@ class WorkoutScreenTest {
 
     @Test
     fun addExerciseAndFinishActionsAreReported() {
-        var addExerciseCalled = false
+        var addedExercise: Exercise? = null
         var finishCalled = false
 
         compose.setContent {
             StrideSetTheme {
                 WorkoutScreen(
                     workout = workoutWithExercise(completed = true),
-                    onBack = {},
-                    onAddExercise = { addExerciseCalled = true },
+                    exercises = listOf(Exercise(id = 1, name = "Back squat", type = ExerciseType.BARBELL)),
+                    onAddExercise = { addedExercise = it },
+                    onAddSet = {},
                     onSetChanged = {},
                     onFinishWorkout = { finishCalled = true },
                     onDiscardWorkout = {},
@@ -95,9 +98,11 @@ class WorkoutScreenTest {
         }
 
         compose.onNodeWithText("+ Add exercise").performClick()
+        compose.onAllNodesWithText("Back squat").get(1).performClick()
+        compose.onAllNodesWithText("Apply").get(1).performClick()
         compose.onNodeWithText("Finish workout").performClick()
 
-        assertTrue(addExerciseCalled)
+        assertTrue(addedExercise?.id == 1L)
         assertTrue(finishCalled)
     }
 
@@ -109,8 +114,8 @@ class WorkoutScreenTest {
             StrideSetTheme {
                 WorkoutScreen(
                     workout = Workout(name = "Workout", startedAt = Instant.now()),
-                    onBack = {},
                     onAddExercise = {},
+                    onAddSet = {},
                     onSetChanged = {},
                     onFinishWorkout = {},
                     onDiscardWorkout = { discardCalled = true },
@@ -118,12 +123,111 @@ class WorkoutScreenTest {
             }
         }
 
-        compose.onNodeWithText("Discard").performClick()
+        compose.onNodeWithText("Discard", useUnmergedTree = true).performClick()
         compose.onNodeWithText("This workout and its sets will be deleted.").assertIsDisplayed()
         assertFalse(discardCalled)
-        compose.onNodeWithText("Discard").performClick()
+        compose.onAllNodesWithText("Discard", useUnmergedTree = true).get(1).performClick()
 
         assertTrue(discardCalled)
+    }
+
+    @Test
+    fun backShowsFinishDiscardAndContinueChoices() {
+        compose.setContent {
+            StrideSetTheme {
+                WorkoutScreen(
+                    workout = workoutWithExercise(),
+                    onAddExercise = {},
+                    onAddSet = {},
+                    onSetChanged = {},
+                    onFinishWorkout = {},
+                    onDiscardWorkout = {},
+                )
+            }
+        }
+
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Leave this workout?").assertIsDisplayed()
+        compose.onNodeWithText("Finish and save").assertIsDisplayed()
+        compose.onAllNodesWithText("Discard").get(1).assertIsDisplayed()
+        compose.onNodeWithText("Continue workout").performClick()
+        compose.onNodeWithText("Leave this workout?").assertDoesNotExist()
+    }
+
+    @Test
+    fun backFinishWithNoCompletedSetsShowsWhyAndKeepsConfirmationOpen() {
+        var finishCalled = false
+
+        compose.setContent {
+            StrideSetTheme {
+                WorkoutScreen(
+                    workout = workoutWithExercise(),
+                    onAddExercise = {},
+                    onAddSet = {},
+                    onSetChanged = {},
+                    onFinishWorkout = { finishCalled = true },
+                    onDiscardWorkout = {},
+                )
+            }
+        }
+
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Finish and save").performClick()
+        compose.onAllNodesWithText("Complete at least one set before finishing.").get(0).assertIsDisplayed()
+        compose.onNodeWithText("Leave this workout?").assertIsDisplayed()
+        assertFalse(finishCalled)
+    }
+
+    @Test
+    fun backFinishWithCompletedSetCallsFinishCallback() {
+        var finishCalled = false
+
+        compose.setContent {
+            StrideSetTheme {
+                WorkoutScreen(
+                    workout = workoutWithExercise(completed = true),
+                    onAddExercise = {},
+                    onAddSet = {},
+                    onSetChanged = {},
+                    onFinishWorkout = { finishCalled = true },
+                    onDiscardWorkout = {},
+                )
+            }
+        }
+
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Finish and save").performClick()
+
+        assertTrue(finishCalled)
+        compose.onNodeWithText("Leave this workout?").assertDoesNotExist()
+    }
+
+    @Test
+    fun backDiscardRequiresConfirmation() {
+        var discardCalled = false
+
+        compose.setContent {
+            StrideSetTheme {
+                WorkoutScreen(
+                    workout = workoutWithExercise(),
+                    onAddExercise = {},
+                    onAddSet = {},
+                    onSetChanged = {},
+                    onFinishWorkout = {},
+                    onDiscardWorkout = { discardCalled = true },
+                )
+            }
+        }
+
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onAllNodesWithText("Discard").get(1).performClick()
+
+        compose.onNodeWithText("Discard workout?").assertIsDisplayed()
+        assertFalse(discardCalled)
+        compose.onAllNodesWithText("Discard").get(1).performClick()
+
+        assertTrue(discardCalled)
+        compose.onNodeWithText("Leave this workout?").assertDoesNotExist()
     }
 
     private fun workoutWithExercise(completed: Boolean = false) = Workout(

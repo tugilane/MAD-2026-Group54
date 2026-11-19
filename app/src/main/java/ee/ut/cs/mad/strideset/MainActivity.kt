@@ -14,6 +14,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import ee.ut.cs.mad.strideset.data.model.UnitSettings
+import ee.ut.cs.mad.strideset.data.repository.EmptyWorkoutException
+import ee.ut.cs.mad.strideset.data.repository.ExerciseNameTakenException
 import ee.ut.cs.mad.strideset.ui.StrideSetApp
 import ee.ut.cs.mad.strideset.ui.theme.StrideSetTheme
 import ee.ut.cs.mad.strideset.running.RunTrackingService
@@ -84,6 +86,56 @@ class MainActivity : ComponentActivity() {
                             if (error is CancellationException) throw error
                             Toast.makeText(this@MainActivity, R.string.workout_discard_error, Toast.LENGTH_LONG).show()
                             false
+                        }
+                    },
+                    onUpdateWorkoutSet = { set ->
+                        try {
+                            workoutRepository.updateSet(set)
+                        } catch (error: Exception) {
+                            if (error is CancellationException) throw error
+                            Toast.makeText(this@MainActivity, R.string.workout_update_error, Toast.LENGTH_LONG).show()
+                        }
+                    },
+                    onAddWorkoutExercise = { workoutId, exercise ->
+                        try {
+                            val savedExercise = if (exercise.id == 0L) {
+                                container.exerciseRepository.addCustomExercise(exercise.name, exercise.type)
+                            } else exercise
+                            val exerciseEntryId = workoutRepository.addExercise(workoutId, savedExercise.id)
+                            workoutRepository.addSet(exerciseEntryId, reps = 0, weightKg = 0.0)
+                            true
+                        } catch (error: Exception) {
+                            if (error is CancellationException) throw error
+                            val message = if (error is ExerciseNameTakenException) {
+                                R.string.exercise_name_taken
+                            } else {
+                                R.string.workout_add_exercise_error
+                            }
+                            Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
+                            false
+                        }
+                    },
+                    onAddWorkoutSet = { exerciseEntryId ->
+                        try {
+                            workoutRepository.addSet(exerciseEntryId, reps = 0, weightKg = 0.0)
+                        } catch (error: Exception) {
+                            if (error is CancellationException) throw error
+                            Toast.makeText(this@MainActivity, R.string.workout_update_error, Toast.LENGTH_LONG).show()
+                        }
+                    },
+                    onFinishWorkout = { workoutId ->
+                        try {
+                            workoutRepository.finishWorkout(workoutId)
+                            workoutRepository.observeWorkout(workoutId).first()
+                        } catch (error: Exception) {
+                            if (error is CancellationException) throw error
+                            val message = if (error is EmptyWorkoutException) {
+                                R.string.workout_finish_requires_completed_set
+                            } else {
+                                R.string.workout_finish_error
+                            }
+                            Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
+                            null
                         }
                     },
                     openRunRequest = openRunRequest,

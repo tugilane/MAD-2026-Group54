@@ -14,6 +14,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -28,6 +29,7 @@ import ee.ut.cs.mad.strideset.data.model.DistanceUnit
 import ee.ut.cs.mad.strideset.data.model.UnitSettings
 import ee.ut.cs.mad.strideset.data.model.WeightUnit
 import ee.ut.cs.mad.strideset.data.model.Workout
+import ee.ut.cs.mad.strideset.data.model.WorkoutSet
 import ee.ut.cs.mad.strideset.data.model.WorkoutPlan
 import ee.ut.cs.mad.strideset.ui.calendar.CalendarScreen
 import ee.ut.cs.mad.strideset.ui.components.ScreenLayout
@@ -47,6 +49,7 @@ private enum class AppDestination(
     Home(R.string.app_name, HomeTab.Start),
     ChooseWorkout(R.string.choose_workout_title),
     Workout(R.string.workout_title),
+    WorkoutComplete(R.string.workout_complete_title),
     PlanEditor(R.string.new_plan_title),
     Run(R.string.run_title),
     Calendar(R.string.nav_calendar, HomeTab.Calendar),
@@ -62,6 +65,10 @@ fun StrideSetApp(
     activeWorkoutFlow: Flow<Workout?>,
     onStartWorkout: suspend (Long?) -> Boolean,
     onDiscardWorkout: suspend (Long) -> Boolean,
+    onUpdateWorkoutSet: suspend (WorkoutSet) -> Unit,
+    onAddWorkoutExercise: suspend (Long, Exercise) -> Boolean,
+    onAddWorkoutSet: suspend (Long) -> Unit,
+    onFinishWorkout: suspend (Long) -> Workout?,
     onDistanceUnitSelected: (DistanceUnit) -> Unit,
     onWeightUnitSelected: (WeightUnit) -> Unit,
     openRunRequest: Int = 0,
@@ -72,6 +79,7 @@ fun StrideSetApp(
     var destination by rememberSaveable { mutableStateOf(AppDestination.Home) }
 
     var selectedPlanId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var completedWorkout by remember { mutableStateOf<Workout?>(null) }
     val coroutineScope = rememberCoroutineScope()
     val activeWorkout by activeWorkoutFlow.collectAsState(initial = null)
 
@@ -86,7 +94,10 @@ fun StrideSetApp(
         }
         selectedPlanId = null
     }
-    BackHandler(enabled = destination != AppDestination.Home && destination != AppDestination.Run) {
+    BackHandler(
+        enabled = destination != AppDestination.Home && destination != AppDestination.Run &&
+            !(destination == AppDestination.Workout && activeWorkout != null),
+    ) {
         goBack()
     }
 
@@ -117,6 +128,7 @@ fun StrideSetApp(
                         coroutineScope.launch {
                             if (onStartWorkout(planId)) {
                                 selectedPlanId = planId
+                                completedWorkout = null
                                 destination = AppDestination.Workout
                             }
                         }
@@ -133,10 +145,22 @@ fun StrideSetApp(
                 } else {
                     WorkoutScreen(
                         workout = workout,
-                        onBack = goBack,
-                        onAddExercise = {},
-                        onSetChanged = {},
-                        onFinishWorkout = {},
+                        exercises = availableExercises.collectAsState(initial = emptyList()).value,
+                        onAddExercise = { exercise ->
+                            coroutineScope.launch { onAddWorkoutExercise(workout.id, exercise) }
+                        },
+                        onAddSet = { exerciseEntryId ->
+                            coroutineScope.launch { onAddWorkoutSet(exerciseEntryId) }
+                        },
+                        onSetChanged = { set -> coroutineScope.launch { onUpdateWorkoutSet(set) } },
+                        onFinishWorkout = {
+                            coroutineScope.launch {
+                                onFinishWorkout(workout.id)?.let { finished ->
+                                    completedWorkout = finished
+                                    destination = AppDestination.WorkoutComplete
+                                }
+                            }
+                        },
                         onDiscardWorkout = {
                             coroutineScope.launch {
                                 if (onDiscardWorkout(workout.id)) {
@@ -147,6 +171,17 @@ fun StrideSetApp(
                         },
                     )
                 }
+            } else if (destination == AppDestination.WorkoutComplete) {
+                completedWorkout?.let { workout ->
+                    WorkoutCompleteScreen(
+                        workout = workout,
+                        onViewCalendar = { destination = AppDestination.Calendar },
+                        onDone = {
+                            completedWorkout = null
+                            destination = AppDestination.Home
+                        },
+                    )
+                } ?: CircularProgressIndicator(Modifier.align(Alignment.Center))
             } else if (destination == AppDestination.PlanEditor) {
                 val exercises by availableExercises.collectAsState(initial = emptyList())
                 val planId = selectedPlanId
@@ -215,6 +250,10 @@ private fun StrideSetAppPreview() {
             activeWorkoutFlow = emptyFlow(),
             onStartWorkout = { true },
             onDiscardWorkout = { true },
+            onUpdateWorkoutSet = {},
+            onAddWorkoutExercise = { _, _ -> true },
+            onAddWorkoutSet = {},
+            onFinishWorkout = { null },
             onDistanceUnitSelected = {},
             onWeightUnitSelected = {}
         )
