@@ -169,6 +169,7 @@ fun StrideSetApp(
                                 }
                             }
                         },
+                        onMinimize = { destination = AppDestination.Calendar },
                     )
                 }
             } else if (destination == AppDestination.WorkoutComplete) {

@@ -82,6 +82,7 @@
     <string name="workout_leave_message">Finish and save, discard this workout, or continue training.</string>
     <string name="continue_workout">Continue workout</string>
     <string name="finish_and_save">Finish and save</string>
+    <string name="workout_background">Keep workout running in background</string>
     <string name="empty_workout_title">Empty workout</string>
     <string name="empty_workout_message">Add your first exercise when you are ready.</string>
     <string name="elapsed_time">Elapsed time</string>

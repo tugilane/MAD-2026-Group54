@@ -38,6 +38,7 @@ class WorkoutScreenTest {
                     onSetChanged = {},
                     onFinishWorkout = { finished = true },
                     onDiscardWorkout = {},
+                    onMinimize = {},
                     initialNow = startedAt.plusSeconds(3_661),
                 )
             }
@@ -64,6 +65,7 @@ class WorkoutScreenTest {
                     onSetChanged = { changedSet = it },
                     onFinishWorkout = {},
                     onDiscardWorkout = {},
+                    onMinimize = {},
                 )
             }
         }
@@ -93,6 +95,7 @@ class WorkoutScreenTest {
                     onSetChanged = {},
                     onFinishWorkout = { finishCalled = true },
                     onDiscardWorkout = {},
+                    onMinimize = {},
                 )
             }
         }
@@ -119,6 +122,7 @@ class WorkoutScreenTest {
                     onSetChanged = {},
                     onFinishWorkout = {},
                     onDiscardWorkout = { discardCalled = true },
+                    onMinimize = {},
                 )
             }
         }
@@ -133,6 +137,8 @@ class WorkoutScreenTest {
 
     @Test
     fun backShowsFinishDiscardAndContinueChoices() {
+        var minimized = false
+
         compose.setContent {
             StrideSetTheme {
                 WorkoutScreen(
@@ -142,6 +148,7 @@ class WorkoutScreenTest {
                     onSetChanged = {},
                     onFinishWorkout = {},
                     onDiscardWorkout = {},
+                    onMinimize = { minimized = true },
                 )
             }
         }
@@ -149,8 +156,14 @@ class WorkoutScreenTest {
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithText("Leave this workout?").assertIsDisplayed()
         compose.onNodeWithText("Finish and save").assertIsDisplayed()
+        compose.onNodeWithText("Keep workout running in background").assertIsDisplayed()
         compose.onAllNodesWithText("Discard").get(1).assertIsDisplayed()
         compose.onNodeWithText("Continue workout").performClick()
+        compose.onNodeWithText("Leave this workout?").assertDoesNotExist()
+
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Keep workout running in background").performClick()
+        assertTrue(minimized)
         compose.onNodeWithText("Leave this workout?").assertDoesNotExist()
     }
 
@@ -167,6 +180,7 @@ class WorkoutScreenTest {
                     onSetChanged = {},
                     onFinishWorkout = { finishCalled = true },
                     onDiscardWorkout = {},
+                    onMinimize = {},
                 )
             }
         }
@@ -191,6 +205,7 @@ class WorkoutScreenTest {
                     onSetChanged = {},
                     onFinishWorkout = { finishCalled = true },
                     onDiscardWorkout = {},
+                    onMinimize = {},
                 )
             }
         }
@@ -215,6 +230,7 @@ class WorkoutScreenTest {
                     onSetChanged = {},
                     onFinishWorkout = {},
                     onDiscardWorkout = { discardCalled = true },
+                    onMinimize = {},
                 )
             }
         }

@@ -73,6 +73,7 @@ internal fun WorkoutScreen(
     onSetChanged: (WorkoutSet) -> Unit,
     onFinishWorkout: () -> Unit,
     onDiscardWorkout: () -> Unit,
+    onMinimize: () -> Unit,
     initialNow: Instant = Instant.now(),
     lastPerformance: Map<Long, ExercisePerformance> = emptyMap(),
 ) {
@@ -194,6 +195,10 @@ internal fun WorkoutScreen(
                         onFinishWorkout()
                     }
                 }) { Text(stringResource(R.string.finish_and_save)) }
+                TextButton(onClick = {
+                    showBackDialog = false
+                    onMinimize()
+                }) { Text(stringResource(R.string.workout_background)) }
                 TextButton(onClick = {
                     showBackDialog = false
                     showDiscardDialog = true
@@ -461,6 +466,7 @@ private fun WorkoutScreenEmptyPreview() {
             onSetChanged = {},
             onFinishWorkout = {},
             onDiscardWorkout = {},
+            onMinimize = {},
         )
     }
 }
@@ -476,6 +482,7 @@ private fun WorkoutScreenPopulatedPreview() {
             onSetChanged = {},
             onFinishWorkout = {},
             onDiscardWorkout = {},
+            onMinimize = {},
             lastPerformance = previewLastPerformance(),
         )
     }
