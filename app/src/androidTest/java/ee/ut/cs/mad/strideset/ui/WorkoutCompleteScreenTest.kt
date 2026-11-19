@@ -60,8 +60,8 @@ class WorkoutCompleteScreenTest {
             }
         }
 
-        compose.onNodeWithText("View calendar").performScrollTo().performClick()
-        compose.onNodeWithText("Done").performScrollTo().performClick()
+        compose.onNodeWithText("View calendar").performClick()
+        compose.onNodeWithText("Done").performClick()
 
         assertTrue(viewedCalendar)
         assertTrue(done)
